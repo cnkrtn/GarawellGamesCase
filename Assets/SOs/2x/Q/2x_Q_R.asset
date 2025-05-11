@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6b5f369567467941bd9162bab15196f, type: 3}
   m_Name: 2x_Q_R
   m_EditorClassIdentifier: 
-  tileId: 19
+  tileID: 18
   edges:
   - pointA: {x: 0, y: 0}
     pointB: {x: 1, y: 0}
@@ -24,3 +24,4 @@ MonoBehaviour:
     pointB: {x: 1, y: 2}
   - pointA: {x: 1, y: 2}
     pointB: {x: 1, y: 1}
+  anchorPoint: {x: 1, y: 0}

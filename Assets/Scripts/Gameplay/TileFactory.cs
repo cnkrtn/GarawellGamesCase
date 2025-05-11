@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Shape;
+using Tile;
 using UnityEngine;
 
 public class TileFactory : MonoBehaviour

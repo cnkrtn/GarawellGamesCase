@@ -16,3 +16,4 @@ MonoBehaviour:
   edges:
   - pointA: {x: 0, y: 0}
     pointB: {x: 1, y: 0}
+  anchorPoint: {x: 1, y: 0}

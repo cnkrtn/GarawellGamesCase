@@ -1,39 +1,36 @@
-namespace Shape
+namespace Tile
 {
- 
-
     public enum TileId
     {
-        _1_I_Block_H  = 0,
-        _1_I_Block_V  = 1,
+        I_H_1x,
+        I_V_1x,
 
-        _1_L_Shape_L  = 2,
-        _1_L_Shape_R  = 3,
-        _1_L_Shape_TL = 5,
-        _1_L_Shape_TR = 6,
+        L_L_1x,
+        L_R_1x,
+        L_TL_1x,
+        L_TR_1x,
 
-        _1_U_Shape_B  = 7,
-        _1_U_Shape_L  = 8,
-        _1_U_Shape_R  = 9,
-        _1_U_Shape_T  = 10,
+        U_B_1x,
+        U_L_1x,
+        U_R_1x,
+        U_T_1x,
 
-        _2_I_Shape_H  = 11,
-        _2_I_Shape_V  = 12,
+        I_H_2x,
+        I_V_2x,
 
-        _2_L_Shape_L  = 13,
-        _2_L_Shape_R  = 14,
-        _2_L_Shape_TL = 15,
-        _2_L_Shape_TR = 16,
+        L_L_2x,
+        L_R_2x,
+        L_TL_2x,
+        L_TR_2x,
 
-        _2_Q_Shape_B  = 17,
-        _2_Q_Shape_L  = 18,
-        _2_Q_Shape_R  = 19,
-        _2_Q_Shape_T  = 20,
+        Q_B_2x,
+        Q_L_2x,
+        Q_R_2x,
+        Q_T_2x,
 
-        _2_U_Shape_B  = 21,
-        _2_U_Shape_L  = 22,
-        _2_U_Shape_R  = 23,
-        _2_U_Shape_T  = 24
+        U_B_2x,
+        U_L_2x,
+        U_R_2x,
+        U_T_2x
     }
-
 }

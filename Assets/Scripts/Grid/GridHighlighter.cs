@@ -1,68 +1,85 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Grid;   // Edge
+using Grid;   // Edge, Point
 
 namespace Grid
 {
     public class GridHighlighter : MonoBehaviour
     {
-        [SerializeField] private Color validColor  = Color.green;
-        [SerializeField] private Color normalColor = Color.white;
+        [SerializeField] private Color validColor   = Color.green;  // highlight
+        [SerializeField] private Color placedColor  = Color.blue;   // permanent
+        [SerializeField] private Color normalColor  = Color.white;  // default
 
-        // we now keep the Edge itself so we can consult IsFilled
-        private readonly List<Edge>           _activeEdges  = new();
-        private readonly List<SpriteRenderer> _activePoints = new();
+        // we keep the Edge so we know when it's filled, and the Point so we know its fill-state
+        private readonly List<Edge>  _activeEdges   = new();
+        private readonly List<Point> _activePoints  = new();
 
-        public Color ValidColor => validColor;          // needed by TileDrag
+        public Color ValidColor  => validColor;
+        public Color PlacedColor => placedColor;
 
-        /* ------------ edges ------------ */
-
+        /// <summary>
+        /// Tint this shape’s edges **and** their endpoints with the “valid” colour.
+        /// </summary>
         public void FlashEdges(IEnumerable<Edge> edges)
         {
-            ClearEdges();                               // clear previous flash
+            ClearEdges();
+            ClearPoints();
 
             foreach (var e in edges)
             {
                 if (e?.Renderer == null) continue;
+
+                // edge
                 e.Renderer.color = validColor;
-                _activeEdges.Add(e);                    // remember the edge
+                _activeEdges.Add(e);
+
+                // endpoint A
+                if (e.A?.Renderer != null)
+                {
+                    e.A.Renderer.color = validColor;
+                    _activePoints.Add(e.A);
+                }
+
+                // endpoint B
+                if (e.B?.Renderer != null)
+                {
+                    e.B.Renderer.color = validColor;
+                    _activePoints.Add(e.B);
+                }
             }
         }
 
+        /// <summary>
+        /// Reset only those edges you flashed:
+        /// – if it’s now “filled”, stamp it with placedColor;
+        /// – otherwise revert to normalColor.
+        /// </summary>
         public void ClearEdges()
         {
             foreach (var e in _activeEdges)
             {
                 if (e?.Renderer == null) continue;
-
-                // reset colour **only if** the edge is still empty
-                if (!e.IsFilled)
-                    e.Renderer.color = normalColor;
+                e.Renderer.color = e.IsFilled 
+                    ? placedColor 
+                    : normalColor;
             }
             _activeEdges.Clear();
         }
 
-        /* ------------ points (unchanged) ------------ */
-
-        public void FlashPoint(int x, int y, GridBuilder builder)
-        {
-            ClearPoints();
-
-            if (x < 0 || x >= builder.GridSize ||
-                y < 0 || y >= builder.GridSize)
-                return;
-
-            var p = builder.Points[x, y];
-            if (p?.Renderer == null) return;
-
-            p.Renderer.color = validColor;
-            _activePoints.Add(p.Renderer);
-        }
-
+        /// <summary>
+        /// Reset only those points you flashed:
+        /// – if it’s already been placed (IsFilledColor), revert to placedColor;
+        /// – otherwise revert to normalColor.
+        /// </summary>
         public void ClearPoints()
         {
-            foreach (var r in _activePoints)
-                if (r != null) r.color = normalColor;
+            foreach (var p in _activePoints)
+            {
+                if (p?.Renderer == null) continue;
+                p.Renderer.color = p.IsFilledColor
+                    ? placedColor
+                    : normalColor;
+            }
             _activePoints.Clear();
         }
     }

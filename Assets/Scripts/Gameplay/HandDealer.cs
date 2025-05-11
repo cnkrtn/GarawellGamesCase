@@ -1,10 +1,11 @@
 using System.Collections;
 using Grid;
-
+using Tile;
+using UnityEngine;
 namespace Gameplay
 {
-    using UnityEngine;
-    using Shape;
+    
+   
 
     public class HandDealer : MonoBehaviour
     {
@@ -22,21 +23,21 @@ namespace Gameplay
 
         private void Deal()
         {
-            int enumCount = System.Enum.GetValues(typeof(TileId)).Length;
+            
 
             for (int i = 0; i < slots.Length; i++)
             {
-                TileId id = (TileId)24;
+                TileId id = TileId.U_R_2x;
                 GameObject go = factory.Spawn(id, Vector2Int.zero);
 
                 go.transform.SetParent(slots[i], false);
 
                 var drag = go.AddComponent<TileDrag>();
                 drag.Init(
-                    gridBuilder, // now pass the entire builder
+                    gridBuilder, 
                     highlighter,
                     uiCam,
-                    slots[i]
+                    slots[i],factory,id
                 );
             }
         }

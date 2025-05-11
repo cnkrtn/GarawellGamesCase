@@ -1,12 +1,12 @@
 using UnityEngine;
 using Grid;
-using Shape;
+using Tile;
 
 public class TileDrag : MonoBehaviour
 {
     [Header("Hold Settings")]
-    [SerializeField] private float   holdScaleMultiplier = 2.2f;
-    [SerializeField] private Vector2 holdScreenOffset    = new(0f, 0.3f);
+    [SerializeField] private float   holdScaleMultiplier = 1.4f;
+  
 
     /* ---- injected references ---- */
     private GridBuilder  _builder;
@@ -97,16 +97,21 @@ public class TileDrag : MonoBehaviour
             foreach (var e in edges)
             {
                 e.IsFilled = true;
+                e.A.IsFilledColor = true;
+                e.B.IsFilledColor = true;
+                
                 if (e.Renderer) e.Renderer.color = _hi.ValidColor;  // permanent tint
             }
 
-            _hi.ClearEdges();                       // clears list but keeps tinted filled edges
+            _hi.ClearEdges();  
+            _hi.ClearPoints();;// clears list but keeps tinted filled edges
             _factory.Despawn(_tileId, gameObject);  // return to pool
             return;
         }
 
         /* ---------- invalid: reset ---------- */
         _hi.ClearEdges();
+        _hi.ClearPoints();
         transform.SetParent(_homeSlot, false);
         transform.localPosition = Vector3.zero;
         transform.localScale    = _idleScale;
@@ -118,16 +123,20 @@ public class TileDrag : MonoBehaviour
 
     private void HighlightAtPivot()
     {
+        // 0) clear any previous highlight
+        _hi.ClearEdges();
+        _hi.ClearPoints();
+
+        // 1) compute the candidate edges
         Vector2Int anchorCell = WorldToCell(transform.position);
         Vector2Int originCell = anchorCell - _shape.anchorPoint;
-
         var edges = GetEdges(originCell);
 
+        // 2) only flash on valid
         if (edges != null && CanPlace(edges))
             _hi.FlashEdges(edges);
-        else
-            _hi.ClearEdges();
     }
+
 
     private Vector3 MouseWorld()
     {

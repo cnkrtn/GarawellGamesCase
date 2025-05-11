@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6b5f369567467941bd9162bab15196f, type: 3}
   m_Name: 2x_L_TL
   m_EditorClassIdentifier: 
-  tileId: 5
+  tileID: 14
   edges:
   - pointA: {x: 1, y: 0}
     pointB: {x: 1, y: 1}
