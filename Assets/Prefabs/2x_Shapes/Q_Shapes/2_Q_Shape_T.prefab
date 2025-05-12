@@ -185,6 +185,7 @@ GameObject:
   - component: {fileID: 715414187344910991}
   - component: {fileID: -8491416184511238620}
   - component: {fileID: 1263817903767547211}
+  - component: {fileID: -5321891559978962646}
   m_Layer: 0
   m_Name: 2_Q_Shape_T
   m_TagString: Untagged
@@ -271,6 +272,19 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 13.309023, y: 7.9673724}
   m_EdgeRadius: 0
+--- !u!114 &-5321891559978962646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3379504883800488533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e237c910937f44f7ae2ace0ac1138027, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  holdScaleMultiplier: 1.4
 --- !u!1 &6569740593888594607
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2743204428890255715}
   - component: {fileID: 7250819780457380021}
   - component: {fileID: 3262109908350530063}
+  - component: {fileID: 5358535891590793825}
   m_Layer: 0
   m_Name: 2_L_Shape_TR
   m_TagString: Untagged
@@ -83,7 +84,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 2.9621482, y: -1.9226018}
+  m_Offset: {x: 5.808329, y: -1.9226017}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -93,8 +94,21 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 12.066142, y: 6.141844}
+  m_Size: {x: 12.476932, y: 6.141844}
   m_EdgeRadius: 0
+--- !u!114 &5358535891590793825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3797863161919292508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e237c910937f44f7ae2ace0ac1138027, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  holdScaleMultiplier: 1.4
 --- !u!1 &5417414316936669059
 GameObject:
   m_ObjectHideFlags: 0
@@ -121,7 +135,7 @@ Transform:
   m_GameObject: {fileID: 5417414316936669059}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.85, y: 0, z: 0}
+  m_LocalPosition: {x: 5.85, y: 2.8999999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -179,7 +193,7 @@ SpriteRenderer:
   m_Size: {x: 5.86, y: 1.89}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &5458040458471482852
@@ -208,7 +222,7 @@ Transform:
   m_GameObject: {fileID: 5458040458471482852}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.9999998, y: 0, z: 0}
+  m_LocalPosition: {x: 2.9999998, y: 2.8999999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -266,7 +280,7 @@ SpriteRenderer:
   m_Size: {x: 5.86, y: 1.89}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1 &5619435488748286159
@@ -353,6 +367,6 @@ SpriteRenderer:
   m_Size: {x: 1.88, y: 5.8}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0

@@ -14,6 +14,7 @@ public class TileCatalog : ScriptableObject
     {
         public TileId id;
         public GameObject prefab;
+        public ShapeData shape;
     }
 
     private Dictionary<TileId, GameObject> _map;

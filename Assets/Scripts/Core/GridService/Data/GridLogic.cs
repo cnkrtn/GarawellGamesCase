@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Core.GridService.Data;
 using UnityEngine;
 
 public class GridLogic
