@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class ScorePopup : MonoBehaviour
 {
-    [SerializeField] float popScale   = 2.5f;
+    [SerializeField] float popScale   = 10f;
     [SerializeField] float upDur      = 0.5f;
-    [SerializeField] float downDur    = 0.2f;
-    [SerializeField] float riseAmount = 100f;  // in pixels (for UI) or world units
-
+    [SerializeField] float downDur    = 0.5f;
+    [SerializeField] float riseAmount = 200f;  // in pixels (for UI) or world units
+    [SerializeField] private RectTransform rt;
     void Start()
     {
         // 1) grab your RectTransform
-        var rt = GetComponent<RectTransform>();
+       
         rt.localScale = Vector3.zero;
 
         // 2) build a sequence

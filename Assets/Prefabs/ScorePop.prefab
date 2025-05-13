@@ -65,10 +65,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 10
+  m_text: +10
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: df3d1784872db1e4790c28eb9c03b4c7, type: 2}
-  m_sharedMaterial: {fileID: 308334818061961761, guid: df3d1784872db1e4790c28eb9c03b4c7, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 297aab4637dbf7a439d7c5b918d8a10c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -185,6 +185,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 605f9197825c4f14a6263d4b93cc1fad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upDur: 0.3
+  popScale: 2
+  upDur: 0.5
   downDur: 0.2
-  popScale: 1.2
+  riseAmount: 250
+  rt: {fileID: 1261731546214407811}

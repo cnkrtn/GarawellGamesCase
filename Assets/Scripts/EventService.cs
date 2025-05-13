@@ -13,5 +13,6 @@ namespace Tile
         public static Action<int> ExpUpdated;
         public static Action LevelFinished;
         public static Action<Point, int> SquareCompleted;
+        public static Action<Point, int> LineCompleted;
     }
 }

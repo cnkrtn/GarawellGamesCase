@@ -13,16 +13,16 @@ namespace Core.HandService.Service
 {
     public class HandService : IHandService
     {
-        private ShapeData[] _allShapes; 
-        private IGridService _grid; 
+        private ShapeData[] _allShapes;
+        private IGridService _grid;
 
         private ITileFactoryService _tileFactoryService;
+
         /* --------------------------------------------------------- */
         /*  Inject: load catalog & cache grid                        */
         /* --------------------------------------------------------- */
         public Task Inject(TileCatalog catalog)
         {
-            
             _allShapes = catalog.entries
                 .Select(e => e.shape)
                 .ToArray();
@@ -40,32 +40,39 @@ namespace Core.HandService.Service
             if (_allShapes == null || _allShapes.Length == 0)
                 return Array.Empty<ShapeData>();
 
-            // build weighted pool from *all* shapes (no playable filter here)
-            var pool = new List<ShapeData>();
-            foreach (var s in _allShapes)
-            {
-                int w = Mathf.Max(1, s.weight);
-                for (int i = 0; i < w; i++) pool.Add(s);
-            }
+            // 1) compute the total weight of *all* shapes
+            int totalWeight = _allShapes.Sum(s => Mathf.Max(1, s.weight));
 
             var hand = new ShapeData[handSize];
+
+            // 2) for each slot, draw until the picked shape fits
             for (int i = 0; i < handSize; i++)
             {
-                ShapeData pick;
-                int attempts = 0;
+                ShapeData pick = null;
+                // keep sampling until CanPlaceShape succeeds
                 do
                 {
-                    pick = pool[Random.Range(0, pool.Count)];
-                    attempts++;
-                    if (attempts > pool.Count) break;  // fallback
-                }
-                while (!_grid.CanPlaceShape(pick));
+                    int r = Random.Range(0, totalWeight);
+                    int cum = 0;
+                    foreach (var s in _allShapes)
+                    {
+                        cum += Mathf.Max(1, s.weight);
+                        if (r < cum)
+                        {
+                            pick = s;
+                            break;
+                        }
+                    }
+                    // if pick is null (shouldn’t happen) or it doesn’t fit, loop again
+                } while (pick == null || !_grid.CanPlaceShape(pick));
 
                 hand[i] = pick;
             }
 
             return hand;
         }
+
+
         public bool AnyCanPlace(IEnumerable<ShapeData> shapes)
         {
             foreach (var s in shapes)

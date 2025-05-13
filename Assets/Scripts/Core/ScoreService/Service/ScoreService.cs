@@ -248,74 +248,69 @@ namespace Core.ScoreService.Service
         }
 
 
-        private void ClearFullLines(int size)
+      private void ClearFullLines(int size)
+{
+    // rows
+    for (int y = 0; y < size - 1; y++)
+    {
+        if (!Enumerable.Range(0, size - 1)
+            .All(x => IsSquareComplete(_gridService.GetPoint(x, y))))
+            continue;
+
+        // line bonus
+        _score += 100;
+        EventService.ScoreUpdated?.Invoke(_score);
+        EventService.LineCleared?.Invoke();
+        GrantExp(_experiencePerLine);
+
+        // collect origins
+        var origins = Enumerable.Range(0, size - 1)
+                                .Select(x => _gridService.GetPoint(x, y))
+                                .ToList();
+        
+
+        // **one +100 at the first square**  
+        EventService.SquareCompleted?.Invoke(origins[0], 100);
+
+        // burst & clear
+        _gridHighlightService.BurstSquaresSequential(origins, 0.1f);
+        foreach (var origin in origins)
         {
-            // rows
-            for (int y = 0; y < size - 1; y++)
-            {
-                bool full = true;
-                for (int x = 0; x < size - 1; x++)
-                    if (!IsSquareComplete(_gridService.GetPoint(x, y)))
-                    {
-                        full = false;
-                        break;
-                    }
-
-                if (!full) continue;
-
-                // 0) give 100 points + notify UI
-                _score += 100;
-                EventService.ScoreUpdated?.Invoke(_score);
-                EventService.LineCleared?.Invoke();
-
-                GrantExp(_experiencePerLine);
-                // 1) collect the points for this row
-                var origins = new List<Point>();
-                for (int x = 0; x < size - 1; x++)
-                    origins.Add(_gridService.GetPoint(x, y));
-
-                // 2) play the burst tween
-                _gridHighlightService.BurstSquaresSequential(origins, 0.1f);
-
-                // 3) hide & clear them logically
-                foreach (var origin in origins)
-                {
-                    _gridHighlightService.HideSquareVisual(origin);
-                    ClearSquareConditional(origin);
-                }
-            }
-
-            // columns (same pattern)
-            for (int x = 0; x < size - 1; x++)
-            {
-                bool full = true;
-                for (int y = 0; y < size - 1; y++)
-                    if (!IsSquareComplete(_gridService.GetPoint(x, y)))
-                    {
-                        full = false;
-                        break;
-                    }
-
-                if (!full) continue;
-
-                // 0) give 100 points + notify UI
-                _score += 100;
-                EventService.ScoreUpdated?.Invoke(_score);
-                EventService.LineCleared?.Invoke();
-                GrantExp(_experiencePerLine);
-                var origins = new List<Point>();
-                for (int y = 0; y < size - 1; y++)
-                    origins.Add(_gridService.GetPoint(x, y));
-
-                _gridHighlightService.BurstSquaresSequential(origins, 0.1f);
-
-                foreach (var origin in origins)
-                {
-                    _gridHighlightService.HideSquareVisual(origin);
-                    ClearSquareConditional(origin);
-                }
-            }
+            _gridHighlightService.HideSquareVisual(origin);
+            ClearSquareConditional(origin);
         }
+    }
+
+    // columns
+    for (int x = 0; x < size - 1; x++)
+    {
+        if (!Enumerable.Range(0, size - 1)
+            .All(y => IsSquareComplete(_gridService.GetPoint(x, y))))
+            continue;
+
+        _score += 100;
+        EventService.ScoreUpdated?.Invoke(_score);
+        EventService.LineCleared?.Invoke();
+        GrantExp(_experiencePerLine);
+
+        var origins = Enumerable.Range(0, size - 1)
+                                .Select(y => _gridService.GetPoint(x, y))
+                                .ToList();
+
+       
+
+        // **one +100 at the first square**  
+        EventService.SquareCompleted?.Invoke(origins[0], 100);
+
+        _gridHighlightService.BurstSquaresSequential(origins, 0.1f);
+        foreach (var origin in origins)
+        {
+            _gridHighlightService.HideSquareVisual(origin);
+            ClearSquareConditional(origin);
+        }
+    }
+}
+
 
         private void GrantExp(int amount)
         {
