@@ -5,29 +5,26 @@ using Grid;
 using Core.TileFactoryService.Interface;
 using Core.GridService.Interface;
 using Core.GridHighlightService.Interface;
-
 using Tile;
 
 public class TileDrag : MonoBehaviour
 {
     [Header("Hold Settings")]
     [SerializeField] float holdScaleMultiplier = 1.4f;
-
-    // The grid cell where this tile's origin (bottom-left) lands
-    public Vector2Int OriginCell { get; private set; }
-
+    public Vector2Int PivotCell { get; private set; }
     /* ── scene slot set by HandDealer ───────────────────────────── */
     private Transform _homeSlot;
 
     /* ── services ───────────────────────────────────────────────── */
-    private ITileFactoryService   _tileFactoryService;
-    private IGridService          _gridService;
+    private ITileFactoryService  _tileFactoryService;
+    private IGridService         _gridService;
     private IGridHighlightService _gridHighlightService;
 
     /* ── camera & shape data ────────────────────────────────────── */
     private Camera    _cam;
     private ShapeData _shape;
-    public ShapeData Shape => _shape;
+    public ShapeData Shape      => _shape;
+    public Vector2Int OriginCell { get; private set; }
     /* ── drag state ─────────────────────────────────────────────── */
     bool    _dragging;
     Vector3 _grabOffset;
@@ -39,16 +36,21 @@ public class TileDrag : MonoBehaviour
     /* ------------------------------------------------------------ */
     public void Init(Transform homeSlot)
     {
-        _homeSlot = homeSlot;
+        _homeSlot   = homeSlot;
+
+        // cache scales
         _idleScale = transform.localScale;
         _holdScale = _idleScale * holdScaleMultiplier;
+
+        // pull shape from SOHolder once
         _shape = GetComponentInChildren<SOHolder>().shape;
 
-        var loc = ReferenceLocator.Instance;
-        _tileFactoryService   = loc.TileFactoryService;
-        _gridService          = loc.GridService;
-        _gridHighlightService = loc.GridHighlightService;
-        _cam = Camera.main;
+        // services
+        var loc  = ReferenceLocator.Instance;
+        _tileFactoryService = loc.TileFactoryService;
+        _gridService    = loc.GridService;
+        _gridHighlightService      = loc.GridHighlightService;
+        _cam     = Camera.main;
     }
 
     /* ------------------------------------------------------------ */
@@ -56,12 +58,12 @@ public class TileDrag : MonoBehaviour
     /* ------------------------------------------------------------ */
     void OnMouseDown()
     {
-        _dragging = true;
+        _dragging            = true;
         transform.localScale = _holdScale;
         transform.SetParent(null, true);
 
-        transform.position = _homeSlot.GetChild(0).position;
-        _grabOffset = transform.position - MouseWorld();
+        transform.position = _homeSlot.GetChild(0).position;  // snap pivot
+        _grabOffset        = transform.position - MouseWorld();
 
         HighlightAtPivot();
     }
@@ -78,38 +80,39 @@ public class TileDrag : MonoBehaviour
         if (!_dragging) return;
         _dragging = false;
 
-        Vector2Int pivotCell = WorldToCell(transform.position);
+        Vector2Int pivotCell  = WorldToCell(transform.position);
         Vector2Int originCell = pivotCell - _shape.anchorPoint;
-
-        // record the final origin for scoring
         OriginCell = originCell;
-
         var edges = _gridService.GetEdges(_shape, originCell);
-        if (edges != null && edges.All(e => !e.IsFilled))     // SUCCESS
+
+        if (edges != null && edges.All(e => !e.IsFilled))      // SUCCESS
         {
             foreach (var e in edges)
             {
                 e.IsFilled        = true;
                 e.A.IsFilledColor = true;
                 e.B.IsFilledColor = true;
-                if (e.Renderer)
-                    e.Renderer.color = _gridHighlightService.PlacedColor;
+                if (e.Renderer) e.Renderer.color = _gridHighlightService.HighlightColor;
             }
 
             _gridHighlightService.ClearEdges();
             _gridHighlightService.ClearPoints();
-            Debug.Log($"[TileDrag] Raising TilePlaced for origin {OriginCell.x},{OriginCell.y}");
-            EventService.TilePlaced?.Invoke(this);
+
+          EventService.TilePlaced?.Invoke(this);
+            
         }
-        else // FAIL
+        else                                                    // FAIL
         {
             _gridHighlightService.ClearEdges();
             _gridHighlightService.ClearPoints();
             transform.SetParent(_homeSlot, false);
             transform.localPosition = Vector3.zero;
-            transform.localScale = _idleScale;
+            transform.localScale    = _idleScale;
         }
+
     }
+
+
 
     /* ------------------------------------------------------------ */
     /*  Helpers                                                     */
@@ -119,8 +122,8 @@ public class TileDrag : MonoBehaviour
         _gridHighlightService.ClearEdges();
         _gridHighlightService.ClearPoints();
 
-        Vector2Int pivotCell = WorldToCell(transform.position);
-        Vector2Int origin = pivotCell - _shape.anchorPoint;
+        Vector2Int anchor = WorldToCell(transform.position);
+        Vector2Int origin = anchor - _shape.anchorPoint;
 
         var edges = _gridService.GetEdges(_shape, origin);
         if (edges != null && edges.All(e => !e.IsFilled))
@@ -137,7 +140,7 @@ public class TileDrag : MonoBehaviour
     Vector2Int WorldToCell(Vector3 world)
     {
         Vector3 local = world - _gridService.Origin;
-        float s = _gridService.Spacing;
+        float   s     = _gridService.Spacing;
         return new Vector2Int(
             Mathf.FloorToInt(local.x / s + 0.5f),
             Mathf.FloorToInt(local.y / s + 0.5f)

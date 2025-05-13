@@ -14,7 +14,7 @@ namespace Core.GridHighlightService.Interface
         public void FlashPoints(IEnumerable<Point> points);
         void ClearEdges();
         void ClearPoints();
-
+        void BurstSquaresSequential(IEnumerable<Point> origins, float interval = 0.1f);
         void ShowSquareVisual(Point origin);
         void HideSquareVisual(Point origin);
         Color HighlightColor { get; }

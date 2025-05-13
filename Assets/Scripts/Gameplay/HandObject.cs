@@ -9,18 +9,18 @@ public class HandObject : MonoBehaviour
 {
     [SerializeField] private Transform[] slotAnchors;
 
-    private IHandService        _handService;
+    private IHandService _handService;
     private ITileFactoryService _tileFactoryService;
+    private ShapeData[] _currentShapes;
     private int _tilesRemaining;
 
     void Awake()
     {
-        var loc = ReferenceLocator.Instance;
-        _handService        = loc.HandService;
-        _tileFactoryService = loc.TileFactoryService;
+        _handService = ReferenceLocator.Instance.HandService;
+        _tileFactoryService = ReferenceLocator.Instance.TileFactoryService;
     }
 
-    void OnEnable()  => EventService.TilePlaced += OnTilePlaced;
+    void OnEnable() => EventService.TilePlaced += OnTilePlaced;
     void OnDisable() => EventService.TilePlaced -= OnTilePlaced;
 
     void Start() => DealNewHand();
@@ -28,30 +28,44 @@ public class HandObject : MonoBehaviour
     public void DealNewHand()
     {
         _tilesRemaining = slotAnchors.Length;
-        var shapes = _handService.DealHand(_tilesRemaining);
-
-        for (int i = 0; i < shapes.Length; i++)
+        _currentShapes = _handService.DealHand(_tilesRemaining);
+        for (int i = 0; i < _currentShapes.Length; i++)
         {
-            var go = _tileFactoryService.Spawn(shapes[i].tileID, slotAnchors[i]);
-            if (go.TryGetComponent<TileDrag>(out var tileDrag))
-            {
-                tileDrag.Init(slotAnchors[i]);
-            }
-            else
-            {
-                Debug.LogError($"[HandObject] Spawned tile is missing TileDrag component on {go.name}");
-            }
-
+            var go = _tileFactoryService.Spawn(_currentShapes[i].tileID, slotAnchors[i]);
+            if (go.TryGetComponent<TileDrag>(out var td))
+                td.Init(slotAnchors[i]);
         }
     }
 
+
     private void OnTilePlaced(TileDrag placed)
     {
+        if (!placed.TryGetComponent(out SOHolder so)) return;
+        var playedShape = so.shape;
+
         _tileFactoryService.Despawn(placed.gameObject);
 
-        if (--_tilesRemaining <= 0)
+        // remove exactly one copy of playedShape:
+        var list = _currentShapes.ToList();
+        if (!list.Remove(playedShape))
+            Debug.LogWarning($"Tried to remove {playedShape.name} but it wasn't in the hand!");
+        _currentShapes = list.ToArray();
+
+        _tilesRemaining--;
+        if (_tilesRemaining > 0)
+        {
+            bool canPlace = _handService.AnyCanPlace(_currentShapes);
+            Debug.Log($"[GameCheck] TilesRemaining={_tilesRemaining}, CanPlace={canPlace}");
+            if (!canPlace)
+            {
+                Debug.Log("Game Over: no remaining hand-shapes fit on the board");
+                EventService.GameOver?.Invoke();
+            }
+        }
+        else
+        {
             DealNewHand();
+        }
     }
 
- 
 }

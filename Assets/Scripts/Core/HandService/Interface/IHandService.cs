@@ -1,5 +1,6 @@
 // Core/HandService/Interface/IHandService.cs
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
@@ -12,5 +13,7 @@ namespace Core.HandService.Interface
 
         /// <summary>Return a playable, weighted hand of ShapeData.</summary>
         ShapeData[] DealHand(int handSize);
+
+        public bool AnyCanPlace(IEnumerable<ShapeData> shapes);
     }
 }

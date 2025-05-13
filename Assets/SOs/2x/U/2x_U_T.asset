@@ -23,4 +23,4 @@ MonoBehaviour:
   - pointA: {x: 2, y: 0}
     pointB: {x: 2, y: 1}
   weight: 1
-  anchorPoint: {x: 1, y: 0}
+  anchorPoint: {x: 0, y: 0}

@@ -66,6 +66,12 @@ namespace Core.HandService.Service
 
             return hand;
         }
-
+        public bool AnyCanPlace(IEnumerable<ShapeData> shapes)
+        {
+            foreach (var s in shapes)
+                if (s != null && _grid.CanPlaceShape(s))
+                    return true;
+            return false;
+        }
     }
 }
