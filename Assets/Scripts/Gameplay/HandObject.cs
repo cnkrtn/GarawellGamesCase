@@ -23,7 +23,7 @@ public class HandObject : MonoBehaviour
     void OnEnable() => EventService.TilePlaced += OnTilePlaced;
     void OnDisable() => EventService.TilePlaced -= OnTilePlaced;
 
-    void Start() => DealNewHand();
+    // void Start() => DealNewHand();
 
     public void DealNewHand()
     {
@@ -36,7 +36,20 @@ public class HandObject : MonoBehaviour
                 td.Init(slotAnchors[i]);
         }
     }
-
+    public void ClearHand()
+    {
+        // despawn everything in your slots
+        foreach (var slot in slotAnchors)
+        {
+            if (slot.childCount > 2)
+            {
+                var go = slot.GetChild(2).gameObject;
+                ReferenceLocator.Instance.TileFactoryService.Despawn(go);
+            }
+        }
+        _tilesRemaining = 0;
+        _currentShapes = new ShapeData[0];
+    }
 
     private void OnTilePlaced(TileDrag placed)
     {

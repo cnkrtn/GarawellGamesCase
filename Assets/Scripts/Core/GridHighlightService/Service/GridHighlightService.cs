@@ -27,12 +27,15 @@ namespace Core.GridHighlightService.Service
         public void ShowSquareVisual(Point o)              => _gridHighlighter.ShowSquareVisual(o);
         public void HideSquareVisual(Point o)              => _gridHighlighter.HideSquareVisual(o);
 
-        // ← NEW
+        public void ClearAllSquares() => _gridHighlighter.ClearAllSquares();
+
         public void BurstSquaresSequential(IEnumerable<Point> origins, float interval = 0.1f)
             => _gridHighlighter.BurstSquaresSequential(origins, interval);
 
         public Color HighlightColor => _gridHighlighter.ValidColor;
         public Color PlacedColor   => _gridHighlighter.PlacedColor;
         public Color NormalColor   => _gridHighlighter.NormalColor;
+        
+        
     }
 }

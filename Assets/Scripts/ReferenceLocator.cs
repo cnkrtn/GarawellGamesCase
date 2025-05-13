@@ -81,13 +81,13 @@ public class ReferenceLocator : MonoBehaviour
         await _addressableService.Inject();
         await _gameService.Inject();
         await _sceneLoaderService.Inject();
-        await _scoreService.Inject();
+        //await _scoreService.Inject();
         StartGame();
     }
 
     private async void StartGame()
     {
-        await _sceneLoaderService.LoadScene(SceneKeys.KEY_GAME_START_SCENE);
+        await _sceneLoaderService.LoadScene(SceneKeys.KEY_MAIN_MENU_SCENE);
         //  _audioService.PlayMusic(AudioKeys.KEY_MAIN_MUSIC, 1000);
     }
 

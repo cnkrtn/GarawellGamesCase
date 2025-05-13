@@ -17,14 +17,13 @@ namespace Core.GridService.Service
         private GridLogic  _logic;
         private GridSettings _cfg;
         private bool _built;
-
+        public IEnumerable<Edge> AllEdges => _edges;
         /* ----------------------------------------------------------------
          *  Inject & build
          * ----------------------------------------------------------------*/
         public async Task Inject(GridPrefabs prefabs, GridSettings cfg)
         {
-            if (_built) return;           // protect against double-inject
-            _built = true;
+            
 
             _cfg    = cfg;
             _points = new Point[cfg.size, cfg.size];

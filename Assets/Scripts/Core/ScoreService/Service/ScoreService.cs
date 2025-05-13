@@ -18,7 +18,7 @@ namespace Core.ScoreService.Service
         private int _combo;
         private int _exp;
         private const int _levelExperienceCap = 1000;
-        private const int _experiencePerLine = 100;   
+        private const int _experiencePerLine = 100;
 
 
         public int CurrentScore => _score;
@@ -145,37 +145,32 @@ namespace Core.ScoreService.Service
                 _gridService.GetEdge(br, tr)
             };
 
+            // --- Clear edges conditionally ---
             foreach (var e in edges)
             {
                 if (e == null) continue;
 
-                // compute the two neighbor square origins
-                var neighborCorners = new List<Vector2Int>();
-                int dx = e.B.X - e.A.X;
-                int dy = e.B.Y - e.A.Y;
-                if (dx != 0)
+                // find neighboring squares of this edge
+                var neighborOrigins = new List<Vector2Int>();
+                int dx = e.B.X - e.A.X, dy = e.B.Y - e.A.Y;
+                if (dx != 0) // horizontal
                 {
-                    neighborCorners.Add(new Vector2Int(e.A.X, e.A.Y));
-                    neighborCorners.Add(new Vector2Int(e.A.X, e.A.Y - 1));
+                    neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y));
+                    neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y - 1));
                 }
-                else
+                else // vertical
                 {
-                    neighborCorners.Add(new Vector2Int(e.A.X, e.A.Y));
-                    neighborCorners.Add(new Vector2Int(e.A.X - 1, e.A.Y));
+                    neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y));
+                    neighborOrigins.Add(new Vector2Int(e.A.X - 1, e.A.Y));
                 }
 
-                // if ANY other neighbor square (not o) is still complete, skip clearing this edge
                 bool usedElsewhere = false;
-                foreach (var nc in neighborCorners)
+                foreach (var nc in neighborOrigins)
                 {
-                    // ignore the square we’re clearing right now
-                    if (nc.x == o.X && nc.y == o.Y)
-                        continue;
-
-                    // bounds check
-                    if (nc.x < 0 || nc.y < 0
-                                 || nc.x >= _gridService.GridSize - 1
-                                 || nc.y >= _gridService.GridSize - 1)
+                    if ((nc.x == o.X && nc.y == o.Y) // skip current
+                        || nc.x < 0 || nc.y < 0
+                        || nc.x >= _gridService.GridSize - 1
+                        || nc.y >= _gridService.GridSize - 1)
                         continue;
 
                     if (IsSquareComplete(_gridService.GetPoint(nc.x, nc.y)))
@@ -187,7 +182,7 @@ namespace Core.ScoreService.Service
 
                 if (!usedElsewhere)
                 {
-                    // safe to clear this edge
+                    // clear this edge
                     e.IsFilled = false;
                     e.A.IsFilledColor = false;
                     e.B.IsFilledColor = false;
@@ -196,44 +191,54 @@ namespace Core.ScoreService.Service
                 }
             }
 
-            // --- now clear the four corner points similarly ---
+            // --- Clear corner points conditionally ---
             var points = new[] { bl, br, tl, tr };
             foreach (var p in points)
             {
-                // check all squares that reference this point: 
-                // their origins are (p.X,   p.Y), 
-                //                  (p.X-1, p.Y), 
-                //                  (p.X,   p.Y-1),
-                //                  (p.X-1, p.Y-1)
-                bool used = false;
-                var corners = new[]
+                if (p == null) continue;
+
+                // check all squares that reference this point
+                var squareOrigins = new[]
                 {
                     new Vector2Int(p.X, p.Y),
                     new Vector2Int(p.X - 1, p.Y),
                     new Vector2Int(p.X, p.Y - 1),
                     new Vector2Int(p.X - 1, p.Y - 1),
                 };
-                foreach (var c in corners)
+
+                bool usedByOther = false;
+                foreach (var so in squareOrigins)
                 {
-                    if (c.x < 0 || c.y < 0
-                                || c.x >= _gridService.GridSize - 1
-                                || c.y >= _gridService.GridSize - 1)
+                    if ((so.x == o.X && so.y == o.Y)
+                        || so.x < 0 || so.y < 0
+                        || so.x >= _gridService.GridSize - 1
+                        || so.y >= _gridService.GridSize - 1)
                         continue;
 
-                    if (IsSquareComplete(_gridService.GetPoint(c.x, c.y)))
+                    if (IsSquareComplete(_gridService.GetPoint(so.x, so.y)))
                     {
-                        used = true;
+                        usedByOther = true;
                         break;
                     }
                 }
 
-                if (!used)
+                if (!usedByOther)
                 {
                     p.IsFilledColor = false;
                     if (p.Renderer)
                         p.Renderer.color = _gridHighlightService.NormalColor;
                 }
             }
+        }
+
+        public void Reset()
+        {
+            _score = 0;
+            _combo = 0;
+            _exp = 0;
+            EventService.ScoreUpdated?.Invoke(_score);
+            EventService.ComboUpdated?.Invoke(_combo);
+            EventService.ExpUpdated?.Invoke(_exp);
         }
 
 
@@ -305,6 +310,7 @@ namespace Core.ScoreService.Service
                 }
             }
         }
+
         private void GrantExp(int amount)
         {
             _exp += amount;
@@ -319,6 +325,7 @@ namespace Core.ScoreService.Service
                 EventService.ExpUpdated?.Invoke(_exp);
             }
         }
+
         public void Dispose()
         {
             EventService.TilePlaced -= OnTilePlaced;

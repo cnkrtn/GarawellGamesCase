@@ -23,6 +23,8 @@ namespace Tile.UI
         [SerializeField] private GameObject gameOverPanel;
         [SerializeField] private GameObject levelCompletePanel;
         [SerializeField] private HandObject _handObject;
+        
+        
         private IScoreService _scoreService;
         private int _lastScore;
         private Coroutine _countRoutine;

@@ -9,22 +9,24 @@ namespace Grid
 {
     public class GridHighlighter : MonoBehaviour
     {
-        [Header("Highlight Colours")]
-        [SerializeField] private Color validColor  = Color.green;
+        [Header("Highlight Colours")] [SerializeField]
+        private Color validColor = Color.green;
+
         [SerializeField] private Color placedColor = Color.blue;
         [SerializeField] private Color normalColor = Color.white;
 
-        [Header("Square Visual Prefab & Spacing")]
-        [SerializeField] private GameObject squarePrefab;
+        [Header("Square Visual Prefab & Spacing")] [SerializeField]
+        private GameObject squarePrefab;
+
         [SerializeField] private Transform squareParent;
         [SerializeField] private float cellSpacing = 1f;
 
-        private readonly List<Edge>            _activeEdges    = new List<Edge>();
-        private readonly List<Point>           _activePoints   = new List<Point>();
-        private readonly Queue<GameObject>     _squarePool     = new Queue<GameObject>();
-        private readonly Dictionary<Point,GameObject> _squareVisuals = new Dictionary<Point,GameObject>();
+        private readonly List<Edge> _activeEdges = new List<Edge>();
+        private readonly List<Point> _activePoints = new List<Point>();
+        private readonly Queue<GameObject> _squarePool = new Queue<GameObject>();
+        private readonly Dictionary<Point, GameObject> _squareVisuals = new Dictionary<Point, GameObject>();
 
-        public Color ValidColor  => validColor;
+        public Color ValidColor => validColor;
         public Color PlacedColor => placedColor;
         public Color NormalColor => normalColor;
 
@@ -42,27 +44,22 @@ namespace Grid
             foreach (var e in edges)
             {
                 if (e == null || e.IsFilled || e.Renderer == null) continue;
-                e.Renderer.color = validColor;
+
+                // full‐alpha valid‐highlight
+                e.Renderer.color = new Color(validColor.r, validColor.g, validColor.b, 1f);
                 _activeEdges.Add(e);
                 if (e.A?.Renderer != null)
                 {
-                    e.A.Renderer.color = validColor;
+                    e.A.Renderer.color = new Color(validColor.r, validColor.g, validColor.b, 1f);
                     _activePoints.Add(e.A);
                 }
+
                 if (e.B?.Renderer != null)
                 {
-                    e.B.Renderer.color = validColor;
+                    e.B.Renderer.color = new Color(validColor.r, validColor.g, validColor.b, 1f);
                     _activePoints.Add(e.B);
                 }
             }
-        }
-
-        public void ClearEdges()
-        {
-            foreach (var e in _activeEdges)
-                if (e?.Renderer != null)
-                    e.Renderer.color = e.IsFilled ? placedColor : normalColor;
-            _activeEdges.Clear();
         }
 
         public void FlashPoints(IEnumerable<Point> points)
@@ -71,18 +68,42 @@ namespace Grid
             foreach (var p in points)
             {
                 if (p == null || p.IsFilledColor || p.Renderer == null) continue;
-                p.Renderer.color = validColor;
+
+                p.Renderer.color = new Color(validColor.r, validColor.g, validColor.b, 1f);
                 _activePoints.Add(p);
             }
+        }
+
+        public void ClearEdges()
+        {
+            foreach (var e in _activeEdges)
+            {
+                if (e?.Renderer == null) continue;
+
+                // pick base color
+                var baseCol = e.IsFilled ? placedColor : normalColor;
+                // choose alpha
+                float a = e.IsFilled ? 1f : (150f / 255f);
+                e.Renderer.color = new Color(baseCol.r, baseCol.g, baseCol.b, a);
+            }
+
+            _activeEdges.Clear();
         }
 
         public void ClearPoints()
         {
             foreach (var p in _activePoints)
-                if (p?.Renderer != null)
-                    p.Renderer.color = p.IsFilledColor ? placedColor : normalColor;
+            {
+                if (p?.Renderer == null) continue;
+
+                var baseCol = p.IsFilledColor ? placedColor : normalColor;
+                float a = p.IsFilledColor ? 1f : (150f / 255f);
+                p.Renderer.color = new Color(baseCol.r, baseCol.g, baseCol.b, a);
+            }
+
             _activePoints.Clear();
         }
+
 
         /// <summary>
         /// Show a square marker at the given cell origin.
@@ -96,19 +117,21 @@ namespace Grid
                 ? _squarePool.Dequeue()
                 : Instantiate(squarePrefab);
 
-            float spacing      = _gridService.Spacing;
+            float spacing = _gridService.Spacing;
             Vector3 gridOrigin = _gridService.Origin;
             float cx = (origin.X + 0.5f) * spacing;
             float cy = (origin.Y + 0.5f) * spacing;
             Vector3 worldCenter = gridOrigin + new Vector3(cx, cy, 0f);
 
-            marker.transform.position   = worldCenter;
-            marker.transform.rotation   = Quaternion.identity;
+            marker.transform.position = worldCenter;
+            marker.transform.rotation = Quaternion.identity;
             marker.transform.localScale = Vector3.one * spacing;
             marker.transform.SetParent(squareParent, true);
 
             if (marker.TryGetComponent(out SpriteRenderer renderer))
-                renderer.color = placedColor;
+            {
+                renderer.color = new Color(placedColor.r, placedColor.g, placedColor.b, 1f);
+            }
 
             marker.SetActive(true);
             _squareVisuals[origin] = marker;
@@ -134,15 +157,26 @@ namespace Grid
                     _squarePool.Enqueue(marker);
                 });
         }
+        public void ClearAllSquares()
+        {
+            // deactivate and pool every square
+            foreach (var kv in _squareVisuals)
+            {
+                var marker = kv.Value;
+                marker.SetActive(false);
+                _squarePool.Enqueue(marker);
+            }
+            _squareVisuals.Clear();
+        }
 
         /// <summary>
         /// Burst (shrink‐and‐hide) the given squares in sequence.
         /// </summary>
         public void BurstSquaresSequential(IEnumerable<Point> origins, float interval = 0.1f)
         {
-            float spacing    = _gridService.Spacing;
-            float upDur      = 0.05f;  // time to scale *up*
-            float downDur    = 0.1f;  // time to scale *down*
+            float spacing = _gridService.Spacing;
+            float upDur = 0.05f; // time to scale *up*
+            float downDur = 0.1f; // time to scale *down*
 
             var seq = DOTween.Sequence();
             foreach (var origin in origins)
@@ -171,6 +205,5 @@ namespace Grid
                     .AppendInterval(interval);
             }
         }
-
     }
 }

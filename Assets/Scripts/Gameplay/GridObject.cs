@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Grid
 {
+    [DefaultExecutionOrder(-1000)]
     public class GridObject : MonoBehaviour
     {
         [Header("Prefabs & Parents")]
@@ -41,9 +42,9 @@ namespace Grid
             await ReferenceLocator.Instance.TileFactoryService.Inject(_tileCatalog);
             await ReferenceLocator.Instance.GridHighlightService.Inject(highlighter);
             await ReferenceLocator.Instance.HandService.Inject(_tileCatalog);
+            await ReferenceLocator.Instance.ScoreService.Inject();
            
-            // presenter done with its job
-            enabled = false;
+           
         }
     }
 

@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      golden-button-export_0: 307103396592449716
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

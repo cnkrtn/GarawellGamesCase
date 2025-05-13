@@ -1,4 +1,6 @@
 // Core/GridService/Interface/IGridService.cs
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.GridService.Data;
 using UnityEngine;
@@ -13,7 +15,7 @@ namespace Core.GridService.Interface
         int     GridSize  { get; }
         float   Spacing   { get; }
         Vector3 Origin    { get; }
-
+        IEnumerable<Edge> AllEdges { get; }
         Edge    GetEdge(Point a, Point b);
         Point   GetPoint(int x, int y);
         Edge[]  GetEdges(ShapeData shape, Vector2Int origin);
