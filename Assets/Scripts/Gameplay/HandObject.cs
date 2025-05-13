@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Core.GridHighlightService.Interface;
 using Core.TileFactoryService.Interface;
 using Core.HandService.Interface;
 using Tile;
@@ -11,6 +12,7 @@ public class HandObject : MonoBehaviour
 
     private IHandService _handService;
     private ITileFactoryService _tileFactoryService;
+    private IGridHighlightService _gridHighlightService;
     private ShapeData[] _currentShapes;
     private int _tilesRemaining;
 
@@ -18,6 +20,7 @@ public class HandObject : MonoBehaviour
     {
         _handService = ReferenceLocator.Instance.HandService;
         _tileFactoryService = ReferenceLocator.Instance.TileFactoryService;
+        _gridHighlightService = ReferenceLocator.Instance.GridHighlightService;
     }
 
     void OnEnable() => EventService.TilePlaced += OnTilePlaced;
@@ -28,12 +31,23 @@ public class HandObject : MonoBehaviour
     public void DealNewHand()
     {
         _tilesRemaining = slotAnchors.Length;
-        _currentShapes = _handService.DealHand(_tilesRemaining);
+        _currentShapes  = _handService.DealHand(_tilesRemaining);
+
         for (int i = 0; i < _currentShapes.Length; i++)
         {
             var go = _tileFactoryService.Spawn(_currentShapes[i].tileID, slotAnchors[i]);
             if (go.TryGetComponent<TileDrag>(out var td))
                 td.Init(slotAnchors[i]);
+
+            // ── COLOR TINT ─────────────────────────────────────────────
+            // Get your base tile color (here using the normal grid color)
+            Color tileColor = _gridHighlightService.PlacedColor;
+
+            // Apply to every SpriteRenderer under this tile
+            foreach (var sr in go.GetComponentsInChildren<SpriteRenderer>())
+            {
+                sr.color = tileColor;
+            }
         }
     }
     public void ClearHand()

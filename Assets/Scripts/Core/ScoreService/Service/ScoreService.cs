@@ -76,15 +76,21 @@ namespace Core.ScoreService.Service
             if (completedCorners.Count > 0)
             {
                 _combo += completedCorners.Count;
-                EventService.ComboUpdated?.Invoke(_combo);
+
+                // only emit for second combo and above
+                if (_combo > 1)
+                    EventService.ComboUpdated?.Invoke(_combo);
 
                 int gained = completedCorners.Count * _combo * 10;
                 _score += gained;
-                Debug.Log($"[ScoreService] Combo +{completedCorners.Count} → {_combo}; +{gained} pts → {_score}");
                 EventService.ScoreUpdated?.Invoke(_score);
 
                 foreach (var corner in completedCorners)
+                {
                     _gridHighlightService.ShowSquareVisual(corner);
+                    EventService.SquareCompleted?.Invoke(corner, gained);
+                }
+                   
 
                 ClearFullLines(size);
             }

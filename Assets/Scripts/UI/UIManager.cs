@@ -1,7 +1,9 @@
 using System.Collections;
+using Core.GridService.Data;
 using Core.ScoreService.Service;
 using DG.Tweening;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,9 +14,14 @@ namespace Tile.UI
         [Header("Score & Combo Displays")] [SerializeField]
         private TextMeshProUGUI scoreText;
 
+        [SerializeField] private Canvas uiCanvas;
+        [SerializeField] private Camera camera;
         [SerializeField] private GameObject scoreTextPop;
 
         [SerializeField] private TextMeshProUGUI comboTextPop;
+        private float   _comboPopScale = 4f;
+        private float   _popUpDuration = 1f;
+        private float   _popDownDuration = 0.15f;
         [SerializeField] private TextMeshProUGUI levelText;
         [SerializeField] private TextMeshProUGUI coinText;
         [SerializeField] private TextMeshProUGUI lineClearText;
@@ -43,7 +50,47 @@ namespace Tile.UI
             EventService.LineCleared    += OnLineCleared;
             EventService.ExpUpdated += OnExpUpdated;
             EventService.LevelFinished += OnLevelFinished;
+            EventService.SquareCompleted += OnSquareCompleted;
         }
+
+        private void OnSquareCompleted(Point origin, int points)
+        {
+            // 1) compute the world‐space center of that cell
+            float s            = ReferenceLocator.Instance.GridService.Spacing;
+            Vector3 worldOrigin= ReferenceLocator.Instance.GridService.Origin;
+            Vector3 worldCenter= worldOrigin + new Vector3((origin.X + .5f) * s,
+                (origin.Y + .5f) * s,
+                0);
+
+            // 2) convert to canvas local coords
+            Vector2 screenPt = camera.WorldToScreenPoint(worldCenter);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                uiCanvas.transform as RectTransform,
+                screenPt,
+                uiCanvas.worldCamera,
+                out Vector2 localPt
+            );
+
+            // 3) spawn the prefab under the canvas
+            var popup = Instantiate(scoreTextPop, uiCanvas.transform);
+
+            // 4) set its anchored position if it has a RectTransform
+            if (popup.TryGetComponent<RectTransform>(out var rt))
+            {
+                rt.anchoredPosition = localPt;
+            }
+            else
+            {
+                Debug.LogWarning("Score popup prefab has no RectTransform!");
+            }
+
+            // 4) set the text
+            var tmp = popup.GetComponentInChildren<TextMeshProUGUI>();
+            if (tmp != null) tmp.text = $"+{points}";
+
+            // 6) let the popup animate & destroy itself (via its own script)
+        }
+
 
         void OnDisable()
         {
@@ -53,6 +100,7 @@ namespace Tile.UI
             EventService.LineCleared    -= OnLineCleared;
             EventService.ExpUpdated -= OnExpUpdated;
             EventService.LevelFinished -= OnLevelFinished;
+            EventService.SquareCompleted -= OnSquareCompleted;
         }
 
 
@@ -84,15 +132,16 @@ namespace Tile.UI
 
         private void OnLineCleared()
         {
-           // lineClearText.text = bonusText;
-            // simple fade & scale pop
-//            lineClearText.transform.localScale = Vector3.zero;
-//            lineClearText.gameObject.SetActive(true);
-            // DOTween.Sequence()
-            //     .Append(lineClearText.transform.DOScale(1.2f, 0.2f).SetEase(Ease.OutBack))
-            //     .AppendInterval(0.6f)
-            //     .Append(lineClearText.transform.DOScale(0f, 0.2f).SetEase(Ease.InBack))
-            //     .OnComplete(() => lineClearText.gameObject.SetActive(false));
+            lineClearText.gameObject.SetActive(true);
+            lineClearText.transform.localScale = Vector3.zero;
+
+            lineClearText.transform
+                .DOScale(_comboPopScale, _popUpDuration).SetEase(Ease.OutBack)
+                .OnComplete(() =>
+                    lineClearText.transform
+                        .DOScale(0, _popUpDuration).SetEase(Ease.InBack)
+                        .OnComplete(() => lineClearText.gameObject.SetActive(false))
+                );
         }
 
         private void ShowScorePopup(int delta)
@@ -116,8 +165,27 @@ namespace Tile.UI
 
         private void OnComboUpdated(int newCombo)
         {
-            // comboTextPop.text = newCombo > 1 ? $"×{newCombo}" : string.Empty;
-            // TODO: trigger combo pop animation
+            Debug.Log("Yessss");
+            if (newCombo < 2)
+                return; // only show on combo ≥2
+
+            comboTextPop.text = " COMBO"+ newCombo;
+            comboTextPop.gameObject.SetActive(true);
+            
+
+            // 1) pop up to _comboPopScale × idle
+            comboTextPop.transform
+                .DOScale( _comboPopScale, _popUpDuration)
+                .SetEase(Ease.OutBack)
+                // 2) then tween back to idle
+                .OnComplete(() =>
+                    comboTextPop.transform
+                        .DOScale(0, _popDownDuration)
+                        .SetEase(Ease.InBack)
+                        .OnComplete(() =>
+                            comboTextPop.gameObject.SetActive(false)
+                        )
+                );
         }
 
         private void OnGameOver()
