@@ -108,6 +108,13 @@ public class TileDrag : MonoBehaviour
             transform.SetParent(_homeSlot, false);
             transform.localPosition = Vector3.zero;
             transform.localScale    = _idleScale;
+            
+            if (transform.childCount > 0)
+            {
+                var pivotLocal = transform.GetChild(0);
+               
+                transform.localPosition = -pivotLocal.localPosition * transform.localScale.x;
+            }
         }
 
     }

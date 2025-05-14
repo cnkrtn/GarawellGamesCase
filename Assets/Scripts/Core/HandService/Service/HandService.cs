@@ -40,21 +40,30 @@ namespace Core.HandService.Service
             if (_allShapes == null || _allShapes.Length == 0)
                 return Array.Empty<ShapeData>();
 
-            // 1) compute the total weight of *all* shapes
-            int totalWeight = _allShapes.Sum(s => Mathf.Max(1, s.weight));
-
             var hand = new ShapeData[handSize];
+            bool largePicked = false;
 
-            // 2) for each slot, draw until the picked shape fits
             for (int i = 0; i < handSize; i++)
             {
+                // 1) build the allowed list for this slot
+                var candidates = largePicked
+                    ? _allShapes.Where(s => !s.isLarge).ToArray()
+                    : _allShapes;
+
+                // if nothing left, break early
+                if (candidates.Length == 0)
+                    break;
+
+                // 2) compute total weight of allowed shapes
+                int totalWeight = candidates.Sum(s => Mathf.Max(1, s.weight));
+
                 ShapeData pick = null;
-                // keep sampling until CanPlaceShape succeeds
+                // 3) sample until a placeable one is found
                 do
                 {
                     int r = Random.Range(0, totalWeight);
                     int cum = 0;
-                    foreach (var s in _allShapes)
+                    foreach (var s in candidates)
                     {
                         cum += Mathf.Max(1, s.weight);
                         if (r < cum)
@@ -63,14 +72,18 @@ namespace Core.HandService.Service
                             break;
                         }
                     }
-                    // if pick is null (shouldn’t happen) or it doesn’t fit, loop again
                 } while (pick == null || !_grid.CanPlaceShape(pick));
 
                 hand[i] = pick;
+
+                // 4) if this pick is large, mark so subsequent slots avoid large
+                if (pick.isLarge)
+                    largePicked = true;
             }
 
             return hand;
         }
+
 
 
         public bool AnyCanPlace(IEnumerable<ShapeData> shapes)

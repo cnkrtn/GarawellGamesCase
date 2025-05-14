@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 2x_Q_B
   m_EditorClassIdentifier: 
   tileID: 16
+  isLarge: 1
   edges:
   - pointA: {x: 0, y: 0}
     pointB: {x: 0, y: 1}
