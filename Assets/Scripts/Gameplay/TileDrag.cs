@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using Core.AudioService.Keys;
+using Core.AudioService.Service;
 using UnityEngine;
 using Grid;
 using Core.TileFactoryService.Interface;
@@ -31,11 +33,12 @@ public class TileDrag : MonoBehaviour
     Vector3 _idleScale;
     Vector3 _holdScale;
 
-    /* ------------------------------------------------------------ */
-    /*  Init: called by HandDealer after Spawn                      */
-    /* ------------------------------------------------------------ */
+    private IAudioService _audioService;
+
     public void Init(Transform homeSlot)
     {
+
+        _audioService = ReferenceLocator.Instance.AudioService;
         _homeSlot   = homeSlot;
 
         // cache scales
@@ -68,6 +71,7 @@ public class TileDrag : MonoBehaviour
     /* ------------------------------------------------------------ */
     void OnMouseDown()
     {
+        _audioService.PlayAudio(AudioKeys.KEY_TILE_DRAG);
         _dragging            = true;
         transform.localScale = _holdScale;
         transform.SetParent(null, true);

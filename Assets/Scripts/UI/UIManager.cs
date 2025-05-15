@@ -1,4 +1,6 @@
 using System.Collections;
+using Core.AudioService.Keys;
+using Core.AudioService.Service;
 using Core.GridService.Data;
 using Core.ScoreService.Service;
 using DG.Tweening;
@@ -30,15 +32,18 @@ namespace Tile.UI
         [SerializeField] private GameObject gameOverPanel;
         [SerializeField] private GameObject levelCompletePanel;
         [SerializeField] private HandObject _handObject;
-        
+   
         
         private IScoreService _scoreService;
+        private IAudioService _audioService;
         private int _lastScore;
         private Coroutine _countRoutine;
 
         void Awake()
         {
+            
             _scoreService = ReferenceLocator.Instance.ScoreService;
+            _audioService = ReferenceLocator.Instance.AudioService;
             gameOverPanel.SetActive(false);
         }
 
@@ -51,6 +56,8 @@ namespace Tile.UI
             EventService.ExpUpdated += OnExpUpdated;
             EventService.LevelFinished += OnLevelFinished;
             EventService.SquareCompleted += OnSquareCompleted;
+            
+      
         }
 
         private void OnSquareCompleted(Point origin, int points)
@@ -101,11 +108,15 @@ namespace Tile.UI
             EventService.ExpUpdated -= OnExpUpdated;
             EventService.LevelFinished -= OnLevelFinished;
             EventService.SquareCompleted -= OnSquareCompleted;
+            
+        
         }
 
 
         private Tween _scoreTween;
 
+      
+        
         private void OnScoreUpdated(int newScore)
         {
             int oldScore = _lastScore;
@@ -132,6 +143,7 @@ namespace Tile.UI
 
         private void OnLineCleared()
         {
+            _audioService.PlayAudio(AudioKeys.KEY_EXCELLENT);
             lineClearText.gameObject.SetActive(true);
             lineClearText.transform.localScale = Vector3.zero;
 
@@ -165,10 +177,11 @@ namespace Tile.UI
 
         private void OnComboUpdated(int newCombo)
         {
+           
             Debug.Log("Yessss");
             if (newCombo < 2)
                 return; // only show on combo ≥2
-
+            _audioService.PlayAudio(AudioKeys.KEY_CoMBO);
             comboTextPop.text = " COMBO"+ newCombo;
             comboTextPop.gameObject.SetActive(true);
             

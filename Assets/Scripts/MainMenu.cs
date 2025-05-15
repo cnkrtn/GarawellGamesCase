@@ -16,7 +16,7 @@ namespace Tile
         [Header("UI References")]
         [SerializeField] private Button startButton;
         [SerializeField] private Button settingsButton;
-
+        [SerializeField] private Button backButton;
         [SerializeField] private Button sizePanelButton;
         [Header("Input Fields")]
      
@@ -25,6 +25,10 @@ namespace Tile
         [Header("Panels")]
         [SerializeField] private GameObject sizePanel;
         [SerializeField] private GameObject settingsPanel;
+        
+        [Header("Audio Toggles")]
+        [SerializeField] private Toggle sfxToggle;
+        [SerializeField] private Toggle musicToggle;
 
         [SerializeField] private GameObject _warningTextObject;
         private ISceneLoaderService _sceneLoaderService;
@@ -42,14 +46,51 @@ namespace Tile
                 _warningTextObject.SetActive(false);
         }
 
-
         private void Start()
         {
             // wire up the button
             startButton.onClick.AddListener(OnStartButtonClicked);
             sizePanelButton.onClick.AddListener(OnSizePanelButtonClicked);
             settingsButton.onClick.AddListener(OnSettingsButtonClicked);
+            backButton.onClick.AddListener(OnBackClicked);
         }
+
+        private void OnBackClicked()
+        {
+            settingsPanel.SetActive(false);
+            sizePanel.SetActive(false);
+        }
+
+        void OnEnable()
+        {
+           
+            
+            sfxToggle.onValueChanged.AddListener(OnSfxToggleChanged);
+            musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
+        }
+
+      
+
+
+        void OnDisable()
+        {
+      
+            
+            sfxToggle.onValueChanged.RemoveListener(OnSfxToggleChanged);
+            musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
+        }
+        private void OnSfxToggleChanged(bool isOn)
+        {
+           
+            _audioService.SetSfxMute(!isOn);
+        }
+
+        private void OnMusicToggleChanged(bool isOn)
+        {
+            // Toggle açıksa müzik aç, kapalıysa mute et
+            _audioService.SetMusicMute(!isOn);
+        }
+      
 
         private void OnSettingsButtonClicked()
         {

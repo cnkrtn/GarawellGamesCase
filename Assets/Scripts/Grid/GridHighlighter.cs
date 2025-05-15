@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Core.AudioService.Keys;
+using Core.AudioService.Service;
 using Core.GridService.Data;
 using Core.GridService.Interface;
 using DG.Tweening;
@@ -31,10 +33,12 @@ namespace Grid
         public Color NormalColor => normalColor;
 
         private IGridService _gridService;
+        private IAudioService _audioService;
 
         private void Awake()
         {
             _gridService = ReferenceLocator.Instance.GridService;
+            _audioService = ReferenceLocator.Instance.AudioService;
         }
 
         public void FlashEdges(IEnumerable<Edge> edges)
@@ -117,6 +121,7 @@ namespace Grid
                 ? _squarePool.Dequeue()
                 : Instantiate(squarePrefab);
 
+            _audioService.PlayAudio(AudioKeys.KEY_SQUARE_CREATED);
             float spacing = _gridService.Spacing;
             Vector3 gridOrigin = _gridService.Origin;
             float cx = (origin.X + 0.5f) * spacing;
@@ -146,7 +151,7 @@ namespace Grid
                 return;
 
             _squareVisuals.Remove(origin);
-
+           
             marker.transform
                 .DOScale(0f, 0.3f)
                 .SetEase(Ease.InBack)

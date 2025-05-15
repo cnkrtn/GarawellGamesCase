@@ -11,5 +11,8 @@ namespace Core.AudioService.Service
         void PlayAudio(string key);
         void PlayMusic(string key, int durationMs);
         void StopMusic();
+
+        public void SetSfxMute(bool mute);
+        public void SetMusicMute(bool mute);
     }
 }

@@ -15,6 +15,8 @@ namespace Core.AudioService.Interface
         private AudioSource _audioSource12;
         private AudioSource _musicSource;
 
+        private bool _isSfxMuted;
+        private bool _isMusicMuted;
         private readonly List<string> _playingAudios = new();
         private int _playingAudioCount;
         private float _volumeStartValue = 0.45f;
@@ -29,7 +31,23 @@ namespace Core.AudioService.Interface
             _addressableService = ReferenceLocator.Instance.AddressableService;
             return Task.CompletedTask;
         }
+        public void SetSfxMute(bool mute)
+        {
+            _isSfxMuted = mute;
+            float vol = mute ? 0f : SoundSettingsManager.GetSFXVolume();
+            _audioSource1.volume = vol;
+            _audioSource11.volume = vol;
+            _audioSource12.volume = vol;
+        }
 
+        /// <summary>
+        /// Müzik sesini sessize alır/geri açar.
+        /// </summary>
+        public void SetMusicMute(bool mute)
+        {
+            _isMusicMuted = mute;
+            _musicSource.volume = mute ? 0f :.1f;
+        }
         public void PlayAudioClip(AudioClip clip)
         {
             _audioSource1.PlayOneShot(clip, 0.8f);

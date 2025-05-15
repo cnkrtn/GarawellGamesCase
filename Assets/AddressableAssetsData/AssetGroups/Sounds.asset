@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48ea212b4a52cf24085deacfea7ff280
+    m_Address: Win
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5c44cd1ed061dbf4eb63e821bcbb6dfa
     m_Address: SquareCreated
     m_ReadOnly: 0
@@ -32,6 +37,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 79ff794e2d4a0b943bb83b324d3d6511
     m_Address: LineClear
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f876f96bf574eb488c2c86cae4064c8
+    m_Address: Combo
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a02cdf8fc50051e4082380cd766021b0
+    m_Address: Excellent
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

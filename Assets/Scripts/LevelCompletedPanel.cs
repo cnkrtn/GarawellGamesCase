@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using Core.AudioService.Keys;
+using Core.AudioService.Service;
 using Core.SceneLoaderService.Interface;
 using Core.SceneLoaderService.Keys;
 using UnityEngine;
@@ -15,10 +17,11 @@ namespace Tile
         [SerializeField] private LevelManager levelManager;
 
         private ISceneLoaderService _sceneLoaderService;
-
+        private IAudioService _audioService;
         private void Awake()
         {
             _sceneLoaderService = ReferenceLocator.Instance.SceneLoaderService;
+            _audioService = ReferenceLocator.Instance.AudioService;
 
             nextButton.onClick.AddListener(OnNextClicked);
             backButton.onClick.AddListener(OnBackClicked);
@@ -26,7 +29,7 @@ namespace Tile
 
         private async void OnBackClicked()
         {
-            
+            _audioService.PlayAudio(AudioKeys.KEY_CLICK_SOUND);
             await _sceneLoaderService.LoadScene(SceneKeys.KEY_MAIN_MENU_SCENE);
         }
 
@@ -35,7 +38,7 @@ namespace Tile
             // hide the win panel
             if (panelToHide != null)
                 panelToHide.SetActive(false);
-
+            _audioService.PlayAudio(AudioKeys.KEY_CLICK_SOUND);
             // advance level (wraps automatically)
             levelManager.NextLevel();
         }

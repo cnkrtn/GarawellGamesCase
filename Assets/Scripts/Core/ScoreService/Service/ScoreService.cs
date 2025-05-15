@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Core.AudioService.Keys;
+using Core.AudioService.Service;
 using Core.GridService.Data;
 using Core.GridService.Interface;
 using Core.GridHighlightService.Interface;
@@ -14,11 +16,12 @@ namespace Core.ScoreService.Service
     {
         private IGridService _gridService;
         private IGridHighlightService _gridHighlightService;
+        private IAudioService _audioService;
         private int _score;
         private int _combo;
         private int _exp;
 
-        private const int _levelExperienceCap = 1000;
+        private const int _levelExperienceCap = 500;
         private const int _experiencePerLine = 100;
 
         public int CurrentScore => _score;
@@ -28,6 +31,7 @@ namespace Core.ScoreService.Service
         {
             _gridService = ReferenceLocator.Instance.GridService;
             _gridHighlightService = ReferenceLocator.Instance.GridHighlightService;
+            _audioService = ReferenceLocator.Instance.AudioService;
             EventService.TilePlaced += OnTilePlaced;
             Debug.Log("[ScoreService] Subscribed to TilePlaced");
             return Task.CompletedTask;
@@ -148,6 +152,7 @@ namespace Core.ScoreService.Service
                 _gridHighlightService.BurstSquaresSequential(origins, 0.1f);
                 foreach (var origin in origins)
                 {
+                    _audioService.PlayAudio(AudioKeys.KEY_LINE_CLEARED);
                     _gridHighlightService.HideSquareVisual(origin);
                     ClearSquareConditional(origin);
                 }
