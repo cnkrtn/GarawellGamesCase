@@ -55,12 +55,12 @@ namespace Core.ScoreService.Service
 
                 if (dx != 0)
                 {
-                    candidates.Add(new Vector2Int(e.A.X,     e.A.Y));
-                    candidates.Add(new Vector2Int(e.A.X,     e.A.Y - 1));
+                    candidates.Add(new Vector2Int(e.A.X, e.A.Y));
+                    candidates.Add(new Vector2Int(e.A.X, e.A.Y - 1));
                 }
                 else
                 {
-                    candidates.Add(new Vector2Int(e.A.X,     e.A.Y));
+                    candidates.Add(new Vector2Int(e.A.X, e.A.Y));
                     candidates.Add(new Vector2Int(e.A.X - 1, e.A.Y));
                 }
 
@@ -108,16 +108,16 @@ namespace Core.ScoreService.Service
 
         private bool IsSquareComplete(Point o)
         {
-            var right   = _gridService.GetPoint(o.X + 1, o.Y);
-            var up      = _gridService.GetPoint(o.X, o.Y + 1);
+            var right = _gridService.GetPoint(o.X + 1, o.Y);
+            var up = _gridService.GetPoint(o.X, o.Y + 1);
             var upRight = _gridService.GetPoint(o.X + 1, o.Y + 1);
 
             var edges = new[]
             {
-                _gridService.GetEdge(o,      right),
-                _gridService.GetEdge(up,     upRight),
-                _gridService.GetEdge(o,      up),
-                _gridService.GetEdge(right,  upRight),
+                _gridService.GetEdge(o, right),
+                _gridService.GetEdge(up, upRight),
+                _gridService.GetEdge(o, up),
+                _gridService.GetEdge(right, upRight),
             };
             return edges.All(e => e != null && e.IsFilled);
         }
@@ -127,27 +127,24 @@ namespace Core.ScoreService.Service
             int w = _gridService.GridWidth;
             int h = _gridService.GridHeight;
 
-            // rows
+            // 1) rows
             for (int y = 0; y < h; y++)
             {
                 if (!Enumerable.Range(0, w)
-                    .All(x => IsSquareComplete(_gridService.GetPoint(x, y))))
+                        .All(x => IsSquareComplete(_gridService.GetPoint(x, y))))
                     continue;
 
-                // line bonus
                 _score += 100;
                 EventService.ScoreUpdated?.Invoke(_score);
                 EventService.LineCleared?.Invoke();
                 GrantExp(_experiencePerLine);
 
                 var origins = Enumerable.Range(0, w)
-                                        .Select(x => _gridService.GetPoint(x, y))
-                                        .ToList();
+                    .Select(x => _gridService.GetPoint(x, y))
+                    .ToList();
 
-                // single +100 at first square
                 EventService.SquareCompleted?.Invoke(origins[0], 100);
 
-                // burst & clear
                 _gridHighlightService.BurstSquaresSequential(origins, 0.1f);
                 foreach (var origin in origins)
                 {
@@ -156,11 +153,11 @@ namespace Core.ScoreService.Service
                 }
             }
 
-            // columns
+            // 2) columns
             for (int x = 0; x < w; x++)
             {
                 if (!Enumerable.Range(0, h)
-                    .All(y => IsSquareComplete(_gridService.GetPoint(x, y))))
+                        .All(y => IsSquareComplete(_gridService.GetPoint(x, y))))
                     continue;
 
                 _score += 100;
@@ -169,8 +166,8 @@ namespace Core.ScoreService.Service
                 GrantExp(_experiencePerLine);
 
                 var origins = Enumerable.Range(0, h)
-                                        .Select(y => _gridService.GetPoint(x, y))
-                                        .ToList();
+                    .Select(y => _gridService.GetPoint(x, y))
+                    .ToList();
 
                 EventService.SquareCompleted?.Invoke(origins[0], 100);
 
@@ -181,12 +178,134 @@ namespace Core.ScoreService.Service
                     ClearSquareConditional(origin);
                 }
             }
+
+            int pointsX = w + 1;
+            int pointsY = h + 1;
+            for (int y = 0; y < pointsY; y++)
+            for (int x = 0; x < pointsX; x++)
+            {
+                var p = _gridService.GetPoint(x, y);
+                if (p.Renderer != null)
+                    p.Renderer.color = p.IsFilledColor
+                        ? _gridHighlightService.PlacedColor
+                        : _gridHighlightService.NormalColor;
+            }
+
+            // 2) repaint every edge
+            foreach (var e in _gridService.AllEdges)
+            {
+                if (e.Renderer != null)
+                    e.Renderer.color = e.IsFilled
+                        ? _gridHighlightService.PlacedColor
+                        : _gridHighlightService.NormalColor;
+            }
         }
+
 
         private void ClearSquareConditional(Point o)
         {
-            // (unchanged) your existing conditional‐clear logic
+            // 1) corner points
+            Point bl = _gridService.GetPoint(o.X, o.Y);
+            Point br = _gridService.GetPoint(o.X + 1, o.Y);
+            Point tl = _gridService.GetPoint(o.X, o.Y + 1);
+            Point tr = _gridService.GetPoint(o.X + 1, o.Y + 1);
+
+            // the four edges surrounding this square
+            var edges = new[]
+            {
+                _gridService.GetEdge(bl, br),
+                _gridService.GetEdge(tl, tr),
+                _gridService.GetEdge(bl, tl),
+                _gridService.GetEdge(br, tr)
+            };
+
+            // --- Clear edges if they’re not used by any other complete square ---
+            foreach (var e in edges)
+            {
+                if (e == null) continue;
+
+                // find the two adjacent squares for this edge
+                var neighborOrigins = new List<Vector2Int>();
+                int dx = e.B.X - e.A.X, dy = e.B.Y - e.A.Y;
+                if (dx != 0) // horizontal edge
+                {
+                    neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y));
+                    neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y - 1));
+                }
+                else // vertical edge
+                {
+                    neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y));
+                    neighborOrigins.Add(new Vector2Int(e.A.X - 1, e.A.Y));
+                }
+
+                bool usedElsewhere = false;
+                foreach (var nc in neighborOrigins)
+                {
+                    // skip the square we’re clearing right now
+                    if ((nc.x == o.X && nc.y == o.Y)
+                        || nc.x < 0 || nc.y < 0
+                        || nc.x >= _gridService.GridWidth
+                        || nc.y >= _gridService.GridHeight)
+                        continue;
+
+                    if (IsSquareComplete(_gridService.GetPoint(nc.x, nc.y)))
+                    {
+                        usedElsewhere = true;
+                        break;
+                    }
+                }
+
+                // if no other square uses this edge, clear it
+                if (!usedElsewhere)
+                {
+                    e.IsFilled = false;
+                    e.A.IsFilledColor = false;
+                    e.B.IsFilledColor = false;
+                    if (e.Renderer)
+                        e.Renderer.color = _gridHighlightService.NormalColor;
+                }
+            }
+
+            // --- Clear corner points if they’re not used by any other complete square ---
+            var points = new[] { bl, br, tl, tr };
+            foreach (var p in points)
+            {
+                if (p == null) continue;
+
+                // check the up-to-four squares that reference this point
+                var squareOrigins = new[]
+                {
+                    new Vector2Int(p.X, p.Y),
+                    new Vector2Int(p.X - 1, p.Y),
+                    new Vector2Int(p.X, p.Y - 1),
+                    new Vector2Int(p.X - 1, p.Y - 1),
+                };
+
+                bool usedByOther = false;
+                foreach (var so in squareOrigins)
+                {
+                    if ((so.x == o.X && so.y == o.Y)
+                        || so.x < 0 || so.y < 0
+                        || so.x >= _gridService.GridWidth
+                        || so.y >= _gridService.GridHeight)
+                        continue;
+
+                    if (IsSquareComplete(_gridService.GetPoint(so.x, so.y)))
+                    {
+                        usedByOther = true;
+                        break;
+                    }
+                }
+
+                if (!usedByOther)
+                {
+                    p.IsFilledColor = false;
+                    if (p.Renderer)
+                        p.Renderer.color = _gridHighlightService.NormalColor;
+                }
+            }
         }
+
 
         private void GrantExp(int amount)
         {
@@ -207,7 +326,7 @@ namespace Core.ScoreService.Service
         {
             _score = 0;
             _combo = 0;
-            _exp   = 0;
+            _exp = 0;
             EventService.ScoreUpdated?.Invoke(_score);
             EventService.ComboUpdated?.Invoke(_combo);
             EventService.ExpUpdated?.Invoke(_exp);

@@ -26,8 +26,8 @@ namespace Core.GridService.Service
         public int GridHeight => _gridSettings.height;
         public async Task Inject(GridPrefabs prefabs, GridSettings cfg)
         {
-            if (_built) return;
-            _built = true;
+            // if (_built) return;
+            // _built = true;
 
             _gridSettings    = cfg;
             // we need (width+1)x(height+1) points to form width×height cells
@@ -59,9 +59,14 @@ namespace Core.GridService.Service
                                             p.pointsParent);
                 go.name = $"Point_{x}_{y}";
 
+                go.transform.localScale = go.transform.localScale * _gridSettings.spacing * (_gridSettings.visualScale/.9f);
                 var sr = go.GetComponentInChildren<SpriteRenderer>();
                 var pt = new Point(x, y, world) { Renderer = sr };
                 _points[x, y] = pt;
+                
+              
+
+                
             }
         }
 
@@ -88,7 +93,7 @@ namespace Core.GridService.Service
 
             if (Mathf.Abs(a.X - b.X) < 0.1f)        
                 go.transform.rotation = Quaternion.Euler(0, 0, 90);
-
+            go.transform.localScale = go.transform.localScale * _gridSettings.spacing * (-_gridSettings.visualScale/.9f);
             e.Renderer = go.GetComponentInChildren<SpriteRenderer>();
         }
 

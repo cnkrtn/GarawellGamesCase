@@ -1,3 +1,5 @@
+using Core.AudioService.Keys;
+using Core.AudioService.Service;
 using Core.SceneLoaderService.Interface;
 using Core.SceneLoaderService.Keys;
 using Tile.Core.IGridSizeService.Interface;
@@ -13,6 +15,7 @@ namespace Tile
     {
         [Header("UI References")]
         [SerializeField] private Button startButton;
+        [SerializeField] private Button settingsButton;
 
         [SerializeField] private Button sizePanelButton;
         [Header("Input Fields")]
@@ -26,12 +29,13 @@ namespace Tile
         [SerializeField] private GameObject _warningTextObject;
         private ISceneLoaderService _sceneLoaderService;
         private IGridSizeService _gridSizeService;
-
+        private IAudioService _audioService;
         private void Awake()
         {
             // grab your scene‐loader service
             _gridSizeService = ReferenceLocator.Instance.GridSizeService;
             _sceneLoaderService = ReferenceLocator.Instance.SceneLoaderService;
+            _audioService = ReferenceLocator.Instance.AudioService;
             
             // hide on start
             if (_warningTextObject != null)
@@ -44,15 +48,27 @@ namespace Tile
             // wire up the button
             startButton.onClick.AddListener(OnStartButtonClicked);
             sizePanelButton.onClick.AddListener(OnSizePanelButtonClicked);
+            settingsButton.onClick.AddListener(OnSettingsButtonClicked);
+        }
+
+        private void OnSettingsButtonClicked()
+        {
+            _audioService.PlayAudio(AudioKeys.KEY_CLICK_SOUND);
+            sizePanel.SetActive(false);
+            settingsPanel.SetActive(true);
         }
 
         private void OnSizePanelButtonClicked()
         {
+            _audioService.PlayAudio(AudioKeys.KEY_CLICK_SOUND);
+            settingsPanel.SetActive(false);
             sizePanel.SetActive(true);
         }
 
         public async void OnStartButtonClicked()
         {
+            
+            _audioService.PlayAudio(AudioKeys.KEY_CLICK_SOUND);
             // 1) parse
             if (int.TryParse(widthField.text, out var px) &&
                 int.TryParse(heightField.text, out var py))
