@@ -12,7 +12,8 @@ namespace Core.GridService.Interface
     {
         Task Inject(GridPrefabs prefabs, GridSettings settings);
 
-        int     GridSize  { get; }
+        int GridWidth  { get; }
+        int GridHeight { get; }
         float   Spacing   { get; }
         Vector3 Origin    { get; }
         IEnumerable<Edge> AllEdges { get; }

@@ -21,7 +21,6 @@ public class LevelLoader : MonoBehaviour
         _grid      = ReferenceLocator.Instance.GridService;
         _highlight = ReferenceLocator.Instance.GridHighlightService;
 
-        // subscribe to the service event
         ReferenceLocator.Instance.SceneLoaderService.SceneLoaded += OnServiceSceneLoaded;
     }
 
@@ -30,50 +29,55 @@ public class LevelLoader : MonoBehaviour
         ReferenceLocator.Instance.SceneLoaderService.SceneLoaded -= OnServiceSceneLoaded;
     }
 
-
     private IEnumerator Start()
     {
-        // same guard: wait for grid
-        yield return new WaitUntil(() => ReferenceLocator.Instance.GridService.GridSize > 0);
+        // wait until grid is built
+        yield return new WaitUntil(() => ReferenceLocator.Instance.GridService.GridWidth > 0);
 
         if (_levelData != null)
             ApplyLevel();
     }
+
     private void OnServiceSceneLoaded(string sceneName)
     {
         if (sceneName != SceneKeys.KEY_GAME_START_SCENE) return;
 
-        // clear old square visuals
         _highlight.ClearAllSquares();
-
-        // re-apply current level
         if (_levelData != null)
             ApplyLevel();
     }
+
     public void ApplyLevel()
     {
-        int size = _grid.GridSize;
+        
 
-        // 1) Clear any existing fill‐state in the grid data
-        foreach (var p in Enumerable.Range(0, size)
-                     .SelectMany(x => Enumerable.Range(0, size)
-                         .Select(y => _grid.GetPoint(x, y))))
+        int w = _grid.GridWidth;
+        int h = _grid.GridHeight;
+
+        // 2) clear all points
+        for (int y = 0; y <= h; y++)
+        for (int x = 0; x <= w; x++)
         {
-            p.IsFilledColor = false;
-            if (p.Renderer) p.Renderer.color = _highlight.NormalColor;
+            var pt = _grid.GetPoint(x, y);
+            pt.IsFilledColor = false;
+            if (pt.Renderer)
+                pt.Renderer.color = _highlight.NormalColor;
         }
 
+        // 3) clear all edges
         foreach (var e in _grid.AllEdges)
         {
             e.IsFilled = false;
-            if (e.Renderer) e.Renderer.color = _highlight.NormalColor;
+            if (e.Renderer)
+                e.Renderer.color = _highlight.NormalColor;
         }
 
-        // 2) For each closed cell, mark its corners & edges as filled—and color them immediately
+        // 4) fill preset cells
         foreach (var cell in _levelData.closedCells)
         {
             int cx = cell.x, cy = cell.y;
-            if (cx < 0 || cy < 0 || cx >= size - 1 || cy >= size - 1)
+            // skip out of range
+            if (cx < 0 || cy < 0 || cx >= w || cy >= h)
             {
                 Debug.LogWarning($"LevelLoader: cell {cell} out of range, skipping.");
                 continue;
@@ -109,13 +113,15 @@ public class LevelLoader : MonoBehaviour
             }
         }
 
-        // 3) Finally, place the 1×1 square visuals on every closed cell
+        // 5) show square visuals
         foreach (var cell in _levelData.closedCells)
         {
-            var bl = _grid.GetPoint(cell.x, cell.y);
+            int cx = cell.x, cy = cell.y;
+            if (cx < 0 || cy < 0 || cx >= w || cy >= h)
+                continue;
+
+            var bl = _grid.GetPoint(cx, cy);
             _highlight.ShowSquareVisual(bl);
         }
     }
-
-
 }

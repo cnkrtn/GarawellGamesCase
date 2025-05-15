@@ -18,7 +18,8 @@ using Core.HandService.Service;
 using Core.ScoreService.Service;
 using Core.TileFactoryService.Interface;
 using Core.TileFactoryService.Service;
-
+using Tile.Core.IGridSizeService.Interface;
+using Tile.Core.IGridSizeService.Service;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -36,20 +37,19 @@ public class ReferenceLocator : MonoBehaviour
     private ISceneLoaderService _sceneLoaderService;
     private IGameService _gameService;
     private IAddressableService _addressableService;
-
     private IGridService _gridService;
-
     private IGridHighlightService _highlightService;
     private ITileFactoryService _tileFactoryService;
-
     private IHandService _handService;
     private IScoreService _scoreService;
+    private IGridSizeService _gridSizeService;
+
+    public IGridSizeService GridSizeService => _gridSizeService;
     public IScoreService ScoreService => _scoreService;
     public IHandService HandService => _handService;
     public ITileFactoryService TileFactoryService => _tileFactoryService;
     public IGridHighlightService GridHighlightService => _highlightService;
     public IGridService GridService => _gridService;
-
     public IAudioService AudioService => _audioService;
     public ISceneLoaderService SceneLoaderService => _sceneLoaderService;
     public IAddressableService AddressableService => _addressableService;
@@ -70,6 +70,7 @@ public class ReferenceLocator : MonoBehaviour
         _tileFactoryService = new TileFactoryService();
         _gameService = new GameService();
         _scoreService = new ScoreService();
+        _gridSizeService = new GridSizeService();
         //  SoundSettingsManager.Initialize(_audioMixer);
 
         Init();
@@ -81,7 +82,7 @@ public class ReferenceLocator : MonoBehaviour
         await _addressableService.Inject();
         await _gameService.Inject();
         await _sceneLoaderService.Inject();
-        //await _scoreService.Inject();
+        await _scoreService.Inject();
         StartGame();
     }
 

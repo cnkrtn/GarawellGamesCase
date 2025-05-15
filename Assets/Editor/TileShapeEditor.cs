@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(ShapeData))]
-public class TileShapeEditor : Editor
+public class TileShapeEditor : UnityEditor.Editor
 {
     const int   GRID  = 5;    // 5 × 5 board
     const float PAD   = 8f;   // border px

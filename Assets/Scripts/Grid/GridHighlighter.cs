@@ -19,7 +19,7 @@ namespace Grid
         private GameObject squarePrefab;
 
         [SerializeField] private Transform squareParent;
-        [SerializeField] private float cellSpacing = 1f;
+        // [SerializeField] private float cellSpacing = 1f;
 
         private readonly List<Edge> _activeEdges = new List<Edge>();
         private readonly List<Point> _activePoints = new List<Point>();

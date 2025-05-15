@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Core.GridService.Data;
 using Core.GridService.Interface;
-using Grid;     
-
+using Grid;
 
 namespace Core.GridService.Service
 {
@@ -15,18 +14,24 @@ namespace Core.GridService.Service
         private Point[,]   _points;
         private List<Edge> _edges;
         private GridLogic  _logic;
-        private GridSettings _cfg;
+        private GridSettings _gridSettings;
+      
         private bool _built;
+
         public IEnumerable<Edge> AllEdges => _edges;
-        /* ----------------------------------------------------------------
-         *  Inject & build
-         * ----------------------------------------------------------------*/
+        
+        public float Spacing  => _gridSettings.spacing;
+        public Vector3 Origin => _gridSettings.origin;
+        public int GridWidth  => _gridSettings.width;
+        public int GridHeight => _gridSettings.height;
         public async Task Inject(GridPrefabs prefabs, GridSettings cfg)
         {
-            
+            if (_built) return;
+            _built = true;
 
-            _cfg    = cfg;
-            _points = new Point[cfg.size, cfg.size];
+            _gridSettings    = cfg;
+            // we need (width+1)x(height+1) points to form width×height cells
+            _points = new Point[cfg.width + 1, cfg.height + 1];
             _edges  = new List<Edge>();
 
             BuildPoints(prefabs);
@@ -38,16 +43,16 @@ namespace Core.GridService.Service
             prefabs.pointsParent.localScale = Vector3.one * cfg.visualScale;
             prefabs.edgesParent .localScale = Vector3.one * cfg.visualScale;
 
-            await Task.CompletedTask;     // keeps async signature
+            await Task.CompletedTask;
         }
 
         private void BuildPoints(GridPrefabs p)
         {
-            for (int y = 0; y < _cfg.size; y++)
-            for (int x = 0; x < _cfg.size; x++)
+            for (int y = 0; y <= _gridSettings.height; y++)
+            for (int x = 0; x <= _gridSettings.width;  x++)
             {
-                Vector3 world = _cfg.origin + new Vector3(x * _cfg.spacing,
-                                                          y * _cfg.spacing,
+                Vector3 world = _gridSettings.origin + new Vector3(x * _gridSettings.spacing,
+                                                          y * _gridSettings.spacing,
                                                           0f);
                 var go = Object.Instantiate(p.pointPrefab, world,
                                             Quaternion.identity,
@@ -62,13 +67,12 @@ namespace Core.GridService.Service
 
         private void BuildEdges(GridPrefabs p)
         {
-            for (int y = 0; y < _cfg.size; y++)
-            for (int x = 0; x < _cfg.size; x++)
+            for (int y = 0; y <= _gridSettings.height; y++)
+            for (int x = 0; x <= _gridSettings.width;  x++)
             {
                 var cur = _points[x, y];
-
-                if (x < _cfg.size - 1) CreateEdge(cur, _points[x + 1, y], p);
-                if (y < _cfg.size - 1) CreateEdge(cur, _points[x, y + 1], p);
+                if (x < _gridSettings.width)   CreateEdge(cur, _points[x + 1, y], p);
+                if (y < _gridSettings.height)  CreateEdge(cur, _points[x, y + 1], p);
             }
         }
 
@@ -82,36 +86,26 @@ namespace Core.GridService.Service
                                         Quaternion.identity,
                                         p.edgesParent);
 
-            if (Mathf.Abs(a.X - b.X) < 0.1f)        // vertical edge
+            if (Mathf.Abs(a.X - b.X) < 0.1f)        
                 go.transform.rotation = Quaternion.Euler(0, 0, 90);
 
             e.Renderer = go.GetComponentInChildren<SpriteRenderer>();
         }
 
-        /* ----------------------------------------------------------------
-         *  Public API – properties
-         * ----------------------------------------------------------------*/
-        public int     GridSize => _cfg.size;
-        public float   Spacing  => _cfg.spacing;
-        public Vector3 Origin   => _cfg.origin;
+        // expose cells dims
+     
+      
 
-        public Point GetPoint(int x, int y)          => _points[x, y];
-        public Edge  GetEdge(Point a, Point b)       => _logic.GetEdge(a, b);
+        public Point GetPoint(int x, int y)    => _points[x, y];
+        public Edge  GetEdge(Point a, Point b) => _logic.GetEdge(a, b);
 
-        /* ----------------------------------------------------------------
-         *  Helper – bounds check
-         * ----------------------------------------------------------------*/
         private bool InBounds(Vector2Int p) =>
                p.x >= 0 && p.y >= 0 &&
-               p.x < _cfg.size && p.y < _cfg.size;
+               p.x <= _gridSettings.width  && p.y <= _gridSettings.height;
 
-        /* ----------------------------------------------------------------
-         *  Public API – placement helpers
-         * ----------------------------------------------------------------*/
         public Edge[] GetEdges(ShapeData shape, Vector2Int origin)
         {
             var list = new Edge[shape.edges.Count];
-
             for (int i = 0; i < list.Length; i++)
             {
                 var ed = shape.edges[i];
@@ -119,12 +113,12 @@ namespace Core.GridService.Service
                 Vector2Int b = origin + ed.pointB;
 
                 if (!InBounds(a) || !InBounds(b))
-                    return null;                         // hangs over edge
+                    return null;
 
                 var pA = _logic.GetPointAt(a.x, a.y);
                 var pB = _logic.GetPointAt(b.x, b.y);
                 var e  = _logic.GetEdge(pA, pB);
-                if (e == null) return null;              // safety
+                if (e == null) return null;
 
                 list[i] = e;
             }
@@ -133,15 +127,14 @@ namespace Core.GridService.Service
 
         public bool CanPlaceShape(ShapeData shape)
         {
-            for (int y = 0; y < _cfg.size; y++)
-            for (int x = 0; x < _cfg.size; x++)
+            // try every possible origin so that shape fits within width×height
+            for (int y = 0; y <= _gridSettings.height; y++)
+            for (int x = 0; x <= _gridSettings.width;  x++)
             {
-                Vector2Int origin = new Vector2Int(x, y) - shape.anchorPoint;
-                var edges = GetEdges(shape, origin);
+                var origin = new Vector2Int(x, y) - shape.anchorPoint;
+                var edges  = GetEdges(shape, origin);
                 if (edges == null) continue;
-
-                if (edges.All(e => !e.IsFilled))
-                    return true;
+                if (edges.All(e => !e.IsFilled)) return true;
             }
             return false;
         }

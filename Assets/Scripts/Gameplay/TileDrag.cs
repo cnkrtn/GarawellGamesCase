@@ -10,7 +10,7 @@ using Tile;
 public class TileDrag : MonoBehaviour
 {
     [Header("Hold Settings")]
-    [SerializeField] float holdScaleMultiplier = 1.4f;
+    [SerializeField] float holdScaleMultiplier = 2f;
     public Vector2Int PivotCell { get; private set; }
     /* ── scene slot set by HandDealer ───────────────────────────── */
     private Transform _homeSlot;
@@ -39,8 +39,18 @@ public class TileDrag : MonoBehaviour
         _homeSlot   = homeSlot;
 
         // cache scales
-        _idleScale = transform.localScale;
-        _holdScale = _idleScale * holdScaleMultiplier;
+        _idleScale = transform.localScale;  
+
+        // 2) grab the current cell‐spacing
+        float spacing = ReferenceLocator.Instance.GridService.Spacing;
+
+        // 3) compute the absolute world‐size you want when held
+        float holdSize = spacing * holdScaleMultiplier;
+
+      
+
+        // 5) compute your final hold scale
+        _holdScale = _idleScale * holdSize;
 
         // pull shape from SOHolder once
         _shape = GetComponentInChildren<SOHolder>().shape;

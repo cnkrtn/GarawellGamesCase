@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.paps.unity-toolbar-extender-ui-toolkit": "https://github.com/Sammmte/unity-toolbar-extender-ui-toolkit.git?path=/Assets/Package",
     "com.unity.addressables": "2.3.16",
     "com.unity.addressables.android": "1.0.6",
     "com.unity.collab-proxy": "2.8.2",

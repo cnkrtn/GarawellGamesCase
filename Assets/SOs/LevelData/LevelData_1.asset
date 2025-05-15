@@ -12,8 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6030ea660cf84cdcbf2240846858970e, type: 3}
   m_Name: LevelData_1
   m_EditorClassIdentifier: 
-  closedCells:
-  - {x: 0, y: 0}
-  - {x: 0, y: 3}
-  - {x: 3, y: 0}
-  - {x: 3, y: 3}
+  closedCells: []
