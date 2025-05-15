@@ -13,11 +13,12 @@ namespace Tile
         private Button retryButton;
 
         [SerializeField] private Button backButton;
-        [SerializeField] private GameObject panelToHide; // the win panel
+        [SerializeField] private GameObject panelToHide;
         [SerializeField] private LevelManager levelManager;
 
         private ISceneLoaderService _sceneLoaderService;
         private IAudioService _audioService;
+
         private void Awake()
         {
             _sceneLoaderService = ReferenceLocator.Instance.SceneLoaderService;
@@ -34,11 +35,10 @@ namespace Tile
 
         private void OnNextClicked()
         {
-            // hide the win panel
             if (panelToHide != null)
                 panelToHide.SetActive(false);
             _audioService.PlayAudio(AudioKeys.KEY_CLICK_SOUND);
-            // advance level (wraps automatically)
+
             levelManager.ReloadCurrentLevel();
         }
     }

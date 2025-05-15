@@ -30,7 +30,7 @@ namespace Core.SceneLoaderService.Service
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
             _additiveSceneInstance = loadingTask.Result;
 
-            // ← fire the event
+
             SceneLoaded?.Invoke(sceneName);
         }
 
@@ -48,29 +48,24 @@ namespace Core.SceneLoaderService.Service
             SceneManager.SetActiveScene(SceneManager.GetSceneByName(_currentSceneName));
             _sceneInstance = loadingTask.Result;
 
-            // ← fire the event
             SceneLoaded?.Invoke(sceneName);
         }
 
         public async Task UnloadAdditiveScene(string sceneName)
         {
-            // look up the scene by name
             var scene = SceneManager.GetSceneByName(sceneName);
 
-            // if it isn't loaded or isn't valid, just return
+
             if (!scene.IsValid() || !scene.isLoaded)
             {
                 Debug.LogWarning($"UnloadAdditiveScene: scene '{sceneName}' not loaded, skipping unload.");
                 return;
             }
 
-            // unload it (no need to SetActiveScene manually)
+
             var unloadOp = SceneManager.UnloadSceneAsync(scene);
             while (!unloadOp.isDone)
                 await Task.Yield();
         }
-
-
-
     }
 }

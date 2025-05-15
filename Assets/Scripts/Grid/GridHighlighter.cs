@@ -49,7 +49,7 @@ namespace Grid
             {
                 if (e == null || e.IsFilled || e.Renderer == null) continue;
 
-                // full‐alpha valid‐highlight
+
                 e.Renderer.color = new Color(validColor.r, validColor.g, validColor.b, 1f);
                 _activeEdges.Add(e);
                 if (e.A?.Renderer != null)
@@ -84,9 +84,9 @@ namespace Grid
             {
                 if (e?.Renderer == null) continue;
 
-                // pick base color
+
                 var baseCol = e.IsFilled ? placedColor : normalColor;
-                // choose alpha
+
                 float a = e.IsFilled ? 1f : (150f / 255f);
                 e.Renderer.color = new Color(baseCol.r, baseCol.g, baseCol.b, a);
             }
@@ -109,9 +109,6 @@ namespace Grid
         }
 
 
-        /// <summary>
-        /// Show a square marker at the given cell origin.
-        /// </summary>
         public void ShowSquareVisual(Point origin)
         {
             if (_squareVisuals.ContainsKey(origin))
@@ -142,16 +139,14 @@ namespace Grid
             _squareVisuals[origin] = marker;
         }
 
-        /// <summary>
-        /// Burst‐and‐shrink one square immediately.
-        /// </summary>
+
         public void HideSquareVisual(Point origin)
         {
             if (!_squareVisuals.TryGetValue(origin, out var marker))
                 return;
 
             _squareVisuals.Remove(origin);
-           
+
             marker.transform
                 .DOScale(0f, 0.3f)
                 .SetEase(Ease.InBack)
@@ -162,26 +157,25 @@ namespace Grid
                     _squarePool.Enqueue(marker);
                 });
         }
+
         public void ClearAllSquares()
         {
-            // deactivate and pool every square
             foreach (var kv in _squareVisuals)
             {
                 var marker = kv.Value;
                 marker.SetActive(false);
                 _squarePool.Enqueue(marker);
             }
+
             _squareVisuals.Clear();
         }
 
-        /// <summary>
-        /// Burst (shrink‐and‐hide) the given squares in sequence.
-        /// </summary>
+
         public void BurstSquaresSequential(IEnumerable<Point> origins, float interval = 0.1f)
         {
             float spacing = _gridService.Spacing;
-            float upDur = 0.05f; // time to scale *up*
-            float downDur = 0.1f; // time to scale *down*
+            float upDur = 0.05f;
+            float downDur = 0.1f;
 
             var seq = DOTween.Sequence();
             foreach (var origin in origins)
@@ -191,22 +185,19 @@ namespace Grid
 
                 _squareVisuals.Remove(origin);
 
-                // 1) pop up to 120%
+
                 seq.Append(marker.transform
                         .DOScale(spacing * 1.2f, upDur)
                         .SetEase(Ease.OutBack))
-                    // 2) then shrink to zero
                     .Append(marker.transform
                         .DOScale(0f, downDur)
                         .SetEase(Ease.InBack))
-                    // 3) once done, deactivate & pool
                     .AppendCallback(() =>
                     {
                         marker.SetActive(false);
                         marker.transform.localScale = Vector3.one * spacing;
                         _squarePool.Enqueue(marker);
                     })
-                    // 4) pause before next
                     .AppendInterval(interval);
             }
         }

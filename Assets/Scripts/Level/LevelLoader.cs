@@ -18,7 +18,7 @@ public class LevelLoader : MonoBehaviour
 
     void Awake()
     {
-        _grid      = ReferenceLocator.Instance.GridService;
+        _grid = ReferenceLocator.Instance.GridService;
         _highlight = ReferenceLocator.Instance.GridHighlightService;
 
         ReferenceLocator.Instance.SceneLoaderService.SceneLoaded += OnServiceSceneLoaded;
@@ -31,7 +31,6 @@ public class LevelLoader : MonoBehaviour
 
     private IEnumerator Start()
     {
-        // wait until grid is built
         yield return new WaitUntil(() => ReferenceLocator.Instance.GridService.GridWidth > 0);
 
         if (_levelData != null)
@@ -49,12 +48,10 @@ public class LevelLoader : MonoBehaviour
 
     public void ApplyLevel()
     {
-        
-
         int w = _grid.GridWidth;
         int h = _grid.GridHeight;
 
-        // 2) clear all points
+
         for (int y = 0; y <= h; y++)
         for (int x = 0; x <= w; x++)
         {
@@ -64,7 +61,7 @@ public class LevelLoader : MonoBehaviour
                 pt.Renderer.color = _highlight.NormalColor;
         }
 
-        // 3) clear all edges
+
         foreach (var e in _grid.AllEdges)
         {
             e.IsFilled = false;
@@ -72,24 +69,24 @@ public class LevelLoader : MonoBehaviour
                 e.Renderer.color = _highlight.NormalColor;
         }
 
-        // 4) fill preset cells
+
         foreach (var cell in _levelData.closedCells)
         {
             int cx = cell.x, cy = cell.y;
-            // skip out of range
+
             if (cx < 0 || cy < 0 || cx >= w || cy >= h)
             {
-                Debug.LogWarning($"LevelLoader: cell {cell} out of range, skipping.");
+                //  Debug.LogWarning($"LevelLoader: cell {cell} out of range, skipping.");
                 continue;
             }
 
             // corner points
-            var bl = _grid.GetPoint(cx,   cy);
-            var br = _grid.GetPoint(cx+1, cy);
-            var tl = _grid.GetPoint(cx,   cy+1);
-            var tr = _grid.GetPoint(cx+1, cy+1);
+            var bl = _grid.GetPoint(cx, cy);
+            var br = _grid.GetPoint(cx + 1, cy);
+            var tl = _grid.GetPoint(cx, cy + 1);
+            var tr = _grid.GetPoint(cx + 1, cy + 1);
 
-            foreach (var pt in new[]{ bl, br, tl, tr })
+            foreach (var pt in new[] { bl, br, tl, tr })
             {
                 pt.IsFilledColor = true;
                 if (pt.Renderer)
@@ -113,7 +110,7 @@ public class LevelLoader : MonoBehaviour
             }
         }
 
-        // 5) show square visuals
+
         foreach (var cell in _levelData.closedCells)
         {
             int cx = cell.x, cy = cell.y;

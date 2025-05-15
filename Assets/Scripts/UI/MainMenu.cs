@@ -9,46 +9,47 @@ namespace Tile
 {
     using UnityEngine;
     using UnityEngine.UI;
-   
+
 
     public class MainMenu : MonoBehaviour
     {
-        [Header("UI References")]
-        [SerializeField] private Button startButton;
+        [Header("UI References")] [SerializeField]
+        private Button startButton;
+
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button backButton;
         [SerializeField] private Button sizePanelButton;
-        [Header("Input Fields")]
-     
-        [SerializeField] private TMP_InputField widthField;
+
+        [Header("Input Fields")] [SerializeField]
+        private TMP_InputField widthField;
+
         [SerializeField] private TMP_InputField heightField;
-        [Header("Panels")]
-        [SerializeField] private GameObject sizePanel;
+        [Header("Panels")] [SerializeField] private GameObject sizePanel;
         [SerializeField] private GameObject settingsPanel;
-        
-        [Header("Audio Toggles")]
-        [SerializeField] private Toggle sfxToggle;
+
+        [Header("Audio Toggles")] [SerializeField]
+        private Toggle sfxToggle;
+
         [SerializeField] private Toggle musicToggle;
 
         [SerializeField] private GameObject _warningTextObject;
         private ISceneLoaderService _sceneLoaderService;
         private IGridSizeService _gridSizeService;
         private IAudioService _audioService;
+
         private void Awake()
         {
-            // grab your scene‐loader service
             _gridSizeService = ReferenceLocator.Instance.GridSizeService;
             _sceneLoaderService = ReferenceLocator.Instance.SceneLoaderService;
             _audioService = ReferenceLocator.Instance.AudioService;
-            
-            // hide on start
+
+
             if (_warningTextObject != null)
                 _warningTextObject.SetActive(false);
         }
 
         private void Start()
         {
-            // wire up the button
             startButton.onClick.AddListener(OnStartButtonClicked);
             sizePanelButton.onClick.AddListener(OnSizePanelButtonClicked);
             settingsButton.onClick.AddListener(OnSettingsButtonClicked);
@@ -63,34 +64,27 @@ namespace Tile
 
         void OnEnable()
         {
-           
-            
             sfxToggle.onValueChanged.AddListener(OnSfxToggleChanged);
             musicToggle.onValueChanged.AddListener(OnMusicToggleChanged);
         }
 
-      
-
 
         void OnDisable()
         {
-      
-            
             sfxToggle.onValueChanged.RemoveListener(OnSfxToggleChanged);
             musicToggle.onValueChanged.RemoveListener(OnMusicToggleChanged);
         }
+
         private void OnSfxToggleChanged(bool isOn)
         {
-           
             _audioService.SetSfxMute(!isOn);
         }
 
         private void OnMusicToggleChanged(bool isOn)
         {
-            // Toggle açıksa müzik aç, kapalıysa mute et
             _audioService.SetMusicMute(!isOn);
         }
-      
+
 
         private void OnSettingsButtonClicked()
         {
@@ -108,16 +102,13 @@ namespace Tile
 
         public async void OnStartButtonClicked()
         {
-            
             _audioService.PlayAudio(AudioKeys.KEY_CLICK_SOUND);
-            // 1) parse
+
             if (int.TryParse(widthField.text, out var px) &&
                 int.TryParse(heightField.text, out var py))
             {
-                // 2) validate
                 if (px >= 3 && px <= 8 && py >= 3 && py <= 8)
                 {
-                    // valid → hide panel, store settings, load game
                     if (_warningTextObject != null)
                         _warningTextObject.SetActive(false);
 
@@ -126,14 +117,12 @@ namespace Tile
                 }
                 else
                 {
-                    // invalid → show panel
                     if (_warningTextObject != null)
                         _warningTextObject.SetActive(true);
                 }
             }
             else
             {
-                // parse failed → show panel
                 if (_warningTextObject != null)
                     _warningTextObject.SetActive(true);
             }

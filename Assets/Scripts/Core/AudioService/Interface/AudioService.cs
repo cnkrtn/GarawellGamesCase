@@ -21,35 +21,39 @@ namespace Core.AudioService.Interface
         private int _playingAudioCount;
         private float _volumeStartValue = 0.45f;
 
-        public Task Inject(AudioSource audioSource1, AudioSource audioSource105, AudioSource audioSource11,
-            AudioSource musicSource)
+        public Task Inject(
+            AudioSource audioSource1,
+            AudioSource audioSource105,
+            AudioSource audioSource11,
+            AudioSource musicSource
+        )
         {
-            _audioSource1 = audioSource1;
-            _audioSource12 = audioSource105;
-            _audioSource11 = audioSource11;
-            _musicSource = musicSource;
+            _audioSource1       = audioSource1;
+            _audioSource12      = audioSource105;
+            _audioSource11      = audioSource11;
+            _musicSource        = musicSource;
             _addressableService = ReferenceLocator.Instance.AddressableService;
             return Task.CompletedTask;
         }
+
         public void SetSfxMute(bool mute)
         {
             _isSfxMuted = mute;
-            float vol = mute ? 0f : SoundSettingsManager.GetSFXVolume();
-            _audioSource1.volume = vol;
+            float vol = mute ? 0f : 0.4f;
+            _audioSource1.volume  = vol;
             _audioSource11.volume = vol;
             _audioSource12.volume = vol;
         }
 
-        /// <summary>
-        /// Müzik sesini sessize alır/geri açar.
-        /// </summary>
         public void SetMusicMute(bool mute)
         {
-            _isMusicMuted = mute;
-            _musicSource.volume = mute ? 0f :.1f;
+            _isMusicMuted       = mute;
+            _musicSource.volume = mute ? 0f : 0.1f;
         }
+
         public void PlayAudioClip(AudioClip clip)
         {
+            if (_isSfxMuted) return;
             _audioSource1.PlayOneShot(clip, 0.8f);
         }
 
@@ -60,34 +64,27 @@ namespace Core.AudioService.Interface
 
         public async void PlayAudio(string key)
         {
-            if (SoundSettingsManager.GetSFXVolume() == 0) return; // Respect mute setting
-            if (_playingAudios.Contains(key)) return;
+            if (_isSfxMuted || _playingAudios.Contains(key)) return;
 
-            var audioClip = await _addressableService.LoadAudioClip(key);
+            var clip = await _addressableService.LoadAudioClip(key);
             _playingAudios.Add(key);
             _playingAudioCount++;
 
-            var volume = AudioKeys.KEY_ALL_AUDIO[key].VolumeOverride != 0
+            float volume = AudioKeys.KEY_ALL_AUDIO[key].VolumeOverride != 0
                 ? AudioKeys.KEY_ALL_AUDIO[key].VolumeOverride
                 : AudioKeys.KEY_ALL_AUDIO[key].Countable
-                    ? SoundSettingsManager.GetSFXVolume() * (_volumeStartValue - _playingAudioCount * 0.05f)
-                    : SoundSettingsManager.GetSFXVolume() * _volumeStartValue;
+                    ? (_volumeStartValue - _playingAudioCount * 0.05f)
+                    : _volumeStartValue;
 
             if (AudioKeys.KEY_ALL_AUDIO[key].RandomPitch)
             {
-                var randomVal = Random.Range(0, 3);
-                switch (randomVal)
-                {
-                    case 0:
-                        _audioSource1.PlayOneShot(audioClip, volume);
-                        break;
-                    case 1:
-                        _audioSource12.PlayOneShot(audioClip, volume);
-                        break;
-                    case 2:
-                        _audioSource11.PlayOneShot(audioClip, volume);
-                        break;
-                }
+                int r = Random.Range(0, 3);
+                var src = r == 0 ? _audioSource1 : r == 1 ? _audioSource12 : _audioSource11;
+                src.PlayOneShot(clip, volume);
+            }
+            else
+            {
+                _audioSource1.PlayOneShot(clip, volume);
             }
 
             await Task.Delay(50);
@@ -98,22 +95,14 @@ namespace Core.AudioService.Interface
 
         public async void PlayMusic(string key, int durationMs)
         {
-           // Debug.Log($"🎵 PlayMusic Called with Key: {key}");
+            if (_isMusicMuted) return;
 
-            // Optional: If you want a delay before starting the music:
             await Task.Delay(durationMs);
+            var clip = await _addressableService.LoadAudioClip(key);
 
-            // Load the audio clip from Addressables
-            var audioClip = await _addressableService.LoadAudioClip(key);
-
-            // Always overwrite the clip and play
-            _musicSource.clip = audioClip;
+            _musicSource.clip = clip;
             _musicSource.loop = true;
             _musicSource.Play();
-           // Debug.Log("✅ Music started playing unconditionally.");
-
-            // Apply volume settings from the mixer
-            SoundSettingsManager.ApplyVolumeSettings();
         }
     }
 }

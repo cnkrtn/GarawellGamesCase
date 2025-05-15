@@ -23,7 +23,7 @@ public class GridLogic
 
     private (Point, Point) GetEdgeKey(Point a, Point b)
     {
-        // Ensure consistent key regardless of order
+       
         return (a.X < b.X || a.Y < b.Y) ? (a, b) : (b, a);
     }
 
@@ -49,7 +49,7 @@ public class GridLogic
 
     public bool IsSquareClosed(int x, int y)
     {
-        // Check if square (x,y) → (x+1,y+1) is enclosed
+       
         if (x >= 4 || y >= 4) return false;
 
         var p00 = _points[x, y];

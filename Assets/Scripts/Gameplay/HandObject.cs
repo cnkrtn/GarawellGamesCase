@@ -26,12 +26,11 @@ public class HandObject : MonoBehaviour
     void OnEnable() => EventService.TilePlaced += OnTilePlaced;
     void OnDisable() => EventService.TilePlaced -= OnTilePlaced;
 
-    // void Start() => DealNewHand();
 
     public void DealNewHand()
     {
         _tilesRemaining = slotAnchors.Length;
-        _currentShapes  = _handService.DealHand(_tilesRemaining);
+        _currentShapes = _handService.DealHand(_tilesRemaining);
 
         for (int i = 0; i < _currentShapes.Length; i++)
         {
@@ -39,20 +38,19 @@ public class HandObject : MonoBehaviour
             if (go.TryGetComponent<TileDrag>(out var td))
                 td.Init(slotAnchors[i]);
 
-            // ── COLOR TINT ─────────────────────────────────────────────
-            // Get your base tile color (here using the normal grid color)
+
             Color tileColor = _gridHighlightService.PlacedColor;
 
-            // Apply to every SpriteRenderer under this tile
+
             foreach (var sr in go.GetComponentsInChildren<SpriteRenderer>())
             {
                 sr.color = tileColor;
             }
         }
     }
+
     public void ClearHand()
     {
-        // despawn everything in your slots
         foreach (var slot in slotAnchors)
         {
             if (slot.childCount > 2)
@@ -61,6 +59,7 @@ public class HandObject : MonoBehaviour
                 ReferenceLocator.Instance.TileFactoryService.Despawn(go);
             }
         }
+
         _tilesRemaining = 0;
         _currentShapes = new ShapeData[0];
     }
@@ -72,20 +71,20 @@ public class HandObject : MonoBehaviour
 
         _tileFactoryService.Despawn(placed.gameObject);
 
-        // remove exactly one copy of playedShape:
+
         var list = _currentShapes.ToList();
         if (!list.Remove(playedShape))
-            Debug.LogWarning($"Tried to remove {playedShape.name} but it wasn't in the hand!");
+          //  Debug.LogWarning($"Tried to remove {playedShape.name} but it wasn't in the hand!");
         _currentShapes = list.ToArray();
 
         _tilesRemaining--;
         if (_tilesRemaining > 0)
         {
             bool canPlace = _handService.AnyCanPlace(_currentShapes);
-            Debug.Log($"[GameCheck] TilesRemaining={_tilesRemaining}, CanPlace={canPlace}");
+           // Debug.Log($"[GameCheck] TilesRemaining={_tilesRemaining}, CanPlace={canPlace}");
             if (!canPlace)
             {
-                Debug.Log("Game Over: no remaining hand-shapes fit on the board");
+              //  Debug.Log("Game Over: no remaining hand-shapes fit on the board");
                 EventService.GameOver?.Invoke();
             }
         }
@@ -94,5 +93,4 @@ public class HandObject : MonoBehaviour
             DealNewHand();
         }
     }
-
 }

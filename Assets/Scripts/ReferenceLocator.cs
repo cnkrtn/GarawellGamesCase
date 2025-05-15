@@ -4,8 +4,6 @@ using Core.AudioService;
 using Core.AudioService.Interface;
 using Core.AudioService.Keys;
 using Core.AudioService.Service;
-using Core.GameService.Interface;
-using Core.GameService.Service;
 using Core.GridService.Interface;
 using Core.GridService.Service;
 using Core.SceneLoaderService.Interface;
@@ -35,7 +33,7 @@ public class ReferenceLocator : MonoBehaviour
 
     private IAudioService _audioService;
     private ISceneLoaderService _sceneLoaderService;
-    private IGameService _gameService;
+   
     private IAddressableService _addressableService;
     private IGridService _gridService;
     private IGridHighlightService _highlightService;
@@ -54,7 +52,7 @@ public class ReferenceLocator : MonoBehaviour
     public ISceneLoaderService SceneLoaderService => _sceneLoaderService;
     public IAddressableService AddressableService => _addressableService;
 
-    public IGameService GameService => _gameService;
+  
 
     private void Awake()
     {
@@ -68,7 +66,7 @@ public class ReferenceLocator : MonoBehaviour
         _highlightService = new GridHighlightService();
         _handService = new HandService();
         _tileFactoryService = new TileFactoryService();
-        _gameService = new GameService();
+       
         _scoreService = new ScoreService();
         _gridSizeService = new GridSizeService();
         //  SoundSettingsManager.Initialize(_audioMixer);
@@ -80,7 +78,7 @@ public class ReferenceLocator : MonoBehaviour
     {
         await _audioService.Inject(_audioSource1, _audioSource12, _audioSource11, _musicSource);
         await _addressableService.Inject();
-        await _gameService.Inject();
+      
         await _sceneLoaderService.Inject();
         await _scoreService.Inject();
         StartGame();
@@ -92,11 +90,5 @@ public class ReferenceLocator : MonoBehaviour
         //  _audioService.PlayMusic(AudioKeys.KEY_MAIN_MUSIC, 1000);
     }
 
-    private void Update()
-    {
-        if (_gameService.GameReady)
-        {
-            // Optional per-frame logic here (like calling Update() on other systems)
-        }
-    }
+  
 }

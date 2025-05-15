@@ -1,4 +1,4 @@
-// Core/GridService/Interface/IGridService.cs
+
 
 using System.Collections.Generic;
 using System.Threading.Tasks;

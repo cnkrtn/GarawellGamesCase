@@ -18,9 +18,7 @@ namespace Core.HandService.Service
 
         private ITileFactoryService _tileFactoryService;
 
-        /* --------------------------------------------------------- */
-        /*  Inject: load catalog & cache grid                        */
-        /* --------------------------------------------------------- */
+
         public Task Inject(TileCatalog catalog)
         {
             _allShapes = catalog.entries
@@ -32,9 +30,7 @@ namespace Core.HandService.Service
             return Task.CompletedTask;
         }
 
-        /* --------------------------------------------------------- */
-        /*  DealHand                                                 */
-        /* --------------------------------------------------------- */
+
         public ShapeData[] DealHand(int handSize)
         {
             if (_allShapes == null || _allShapes.Length == 0)
@@ -45,20 +41,19 @@ namespace Core.HandService.Service
 
             for (int i = 0; i < handSize; i++)
             {
-                // 1) build the allowed list for this slot
                 var candidates = largePicked
                     ? _allShapes.Where(s => !s.isLarge).ToArray()
                     : _allShapes;
 
-                // if nothing left, break early
+
                 if (candidates.Length == 0)
                     break;
 
-                // 2) compute total weight of allowed shapes
+
                 int totalWeight = candidates.Sum(s => Mathf.Max(1, s.weight));
 
                 ShapeData pick = null;
-                // 3) sample until a placeable one is found
+
                 do
                 {
                     int r = Random.Range(0, totalWeight);
@@ -76,14 +71,13 @@ namespace Core.HandService.Service
 
                 hand[i] = pick;
 
-                // 4) if this pick is large, mark so subsequent slots avoid large
+
                 if (pick.isLarge)
                     largePicked = true;
             }
 
             return hand;
         }
-
 
 
         public bool AnyCanPlace(IEnumerable<ShapeData> shapes)

@@ -8,8 +8,8 @@ public class ShapeData : ScriptableObject
 {
     public TileId    tileID;
     public bool isLarge;
-    public List<EdgeData> edges;         // your existing list of pointA/pointB pairs
+    public List<EdgeData> edges;         
     [Min(0)] public int weight = 1;
-    [Tooltip("Which grid-point (in shape-local coordinates) acts as the anchor for placement")]
+    [Tooltip("Anchor Point")]
     public Vector2Int anchorPoint = new Vector2Int(0,0);
 }

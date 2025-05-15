@@ -7,7 +7,7 @@ using Core.AudioService.Service;
 using Core.GridService.Data;
 using Core.GridService.Interface;
 using Core.GridHighlightService.Interface;
-using Tile; // for EventService & TileDrag
+using Tile;
 using UnityEngine;
 
 namespace Core.ScoreService.Service
@@ -33,13 +33,12 @@ namespace Core.ScoreService.Service
             _gridHighlightService = ReferenceLocator.Instance.GridHighlightService;
             _audioService = ReferenceLocator.Instance.AudioService;
             EventService.TilePlaced += OnTilePlaced;
-            Debug.Log("[ScoreService] Subscribed to TilePlaced");
+            // Debug.Log("[ScoreService] Subscribed to TilePlaced");
             return Task.CompletedTask;
         }
 
         private void OnTilePlaced(TileDrag tile)
         {
-            // 0) Shape‐placement bonus
             int uniqueCorners = tile.Shape.edges
                 .SelectMany(e => new[] { e.pointA, e.pointB })
                 .Distinct()
@@ -48,7 +47,7 @@ namespace Core.ScoreService.Service
             _score += uniqueCorners;
             EventService.ScoreUpdated?.Invoke(_score);
 
-            // 1) Find newly completed squares
+
             var placedEdges = _gridService.GetEdges(tile.Shape, tile.OriginCell);
             var completedCorners = new HashSet<Point>();
 
@@ -72,7 +71,7 @@ namespace Core.ScoreService.Service
                     TryAddCompleted(c.x, c.y, completedCorners);
             }
 
-            // 2) Award combo & per‐square popups
+
             if (completedCorners.Count > 0)
             {
                 _combo += completedCorners.Count;
@@ -196,7 +195,7 @@ namespace Core.ScoreService.Service
                         : _gridHighlightService.NormalColor;
             }
 
-            // 2) repaint every edge
+
             foreach (var e in _gridService.AllEdges)
             {
                 if (e.Renderer != null)
@@ -209,13 +208,12 @@ namespace Core.ScoreService.Service
 
         private void ClearSquareConditional(Point o)
         {
-            // 1) corner points
             Point bl = _gridService.GetPoint(o.X, o.Y);
             Point br = _gridService.GetPoint(o.X + 1, o.Y);
             Point tl = _gridService.GetPoint(o.X, o.Y + 1);
             Point tr = _gridService.GetPoint(o.X + 1, o.Y + 1);
 
-            // the four edges surrounding this square
+
             var edges = new[]
             {
                 _gridService.GetEdge(bl, br),
@@ -224,20 +222,20 @@ namespace Core.ScoreService.Service
                 _gridService.GetEdge(br, tr)
             };
 
-            // --- Clear edges if they’re not used by any other complete square ---
+
             foreach (var e in edges)
             {
                 if (e == null) continue;
 
-                // find the two adjacent squares for this edge
+
                 var neighborOrigins = new List<Vector2Int>();
                 int dx = e.B.X - e.A.X, dy = e.B.Y - e.A.Y;
-                if (dx != 0) // horizontal edge
+                if (dx != 0)
                 {
                     neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y));
                     neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y - 1));
                 }
-                else // vertical edge
+                else
                 {
                     neighborOrigins.Add(new Vector2Int(e.A.X, e.A.Y));
                     neighborOrigins.Add(new Vector2Int(e.A.X - 1, e.A.Y));
@@ -246,7 +244,6 @@ namespace Core.ScoreService.Service
                 bool usedElsewhere = false;
                 foreach (var nc in neighborOrigins)
                 {
-                    // skip the square we’re clearing right now
                     if ((nc.x == o.X && nc.y == o.Y)
                         || nc.x < 0 || nc.y < 0
                         || nc.x >= _gridService.GridWidth
@@ -260,7 +257,7 @@ namespace Core.ScoreService.Service
                     }
                 }
 
-                // if no other square uses this edge, clear it
+
                 if (!usedElsewhere)
                 {
                     e.IsFilled = false;
@@ -271,13 +268,13 @@ namespace Core.ScoreService.Service
                 }
             }
 
-            // --- Clear corner points if they’re not used by any other complete square ---
+
             var points = new[] { bl, br, tl, tr };
             foreach (var p in points)
             {
                 if (p == null) continue;
 
-                // check the up-to-four squares that reference this point
+
                 var squareOrigins = new[]
                 {
                     new Vector2Int(p.X, p.Y),

@@ -21,19 +21,21 @@ namespace Tile.UI
         [SerializeField] private GameObject scoreTextPop;
 
         [SerializeField] private TextMeshProUGUI comboTextPop;
-        private float   _comboPopScale = 4f;
-        private float   _popUpDuration = 1f;
-        private float   _popDownDuration = 0.15f;
+        private float _comboPopScale = 4f;
+        private float _popUpDuration = 1f;
+        private float _popDownDuration = 0.15f;
         [SerializeField] private TextMeshProUGUI levelText;
         [SerializeField] private TextMeshProUGUI coinText;
         [SerializeField] private TextMeshProUGUI lineClearText;
         [SerializeField] private Slider expSlider;
-        [Header("Game Over Panel")] 
-        [SerializeField] private GameObject gameOverPanel;
+
+        [Header("Game Over Panel")] [SerializeField]
+        private GameObject gameOverPanel;
+
         [SerializeField] private GameObject levelCompletePanel;
         [SerializeField] private HandObject _handObject;
-   
-        
+
+
         private IScoreService _scoreService;
         private IAudioService _audioService;
         private int _lastScore;
@@ -41,7 +43,6 @@ namespace Tile.UI
 
         void Awake()
         {
-            
             _scoreService = ReferenceLocator.Instance.ScoreService;
             _audioService = ReferenceLocator.Instance.AudioService;
             gameOverPanel.SetActive(false);
@@ -52,20 +53,18 @@ namespace Tile.UI
             EventService.ScoreUpdated += OnScoreUpdated;
             EventService.ComboUpdated += OnComboUpdated;
             EventService.GameOver += OnGameOver;
-            EventService.LineCleared    += OnLineCleared;
+            EventService.LineCleared += OnLineCleared;
             EventService.ExpUpdated += OnExpUpdated;
             EventService.LevelFinished += OnLevelFinished;
             EventService.SquareCompleted += OnSquareCompleted;
-            
-      
         }
 
         private void OnSquareCompleted(Point origin, int points)
         {
             // 1) compute the world‐space center of that cell
-            float s            = ReferenceLocator.Instance.GridService.Spacing;
-            Vector3 worldOrigin= ReferenceLocator.Instance.GridService.Origin;
-            Vector3 worldCenter= worldOrigin + new Vector3((origin.X + .5f) * s,
+            float s = ReferenceLocator.Instance.GridService.Spacing;
+            Vector3 worldOrigin = ReferenceLocator.Instance.GridService.Origin;
+            Vector3 worldCenter = worldOrigin + new Vector3((origin.X + .5f) * s,
                 (origin.Y + .5f) * s,
                 0);
 
@@ -104,40 +103,33 @@ namespace Tile.UI
             EventService.ScoreUpdated -= OnScoreUpdated;
             EventService.ComboUpdated -= OnComboUpdated;
             EventService.GameOver -= OnGameOver;
-            EventService.LineCleared    -= OnLineCleared;
+            EventService.LineCleared -= OnLineCleared;
             EventService.ExpUpdated -= OnExpUpdated;
             EventService.LevelFinished -= OnLevelFinished;
             EventService.SquareCompleted -= OnSquareCompleted;
-            
-        
         }
 
 
         private Tween _scoreTween;
 
-      
-        
+
         private void OnScoreUpdated(int newScore)
         {
             int oldScore = _lastScore;
             _lastScore = newScore;
 
-            // kill any in‐flight tween
+
             _scoreTween?.Kill();
 
-            // compute a duration based on how big the change is (min 0.3s, max 1s)
+
             float duration = Mathf.Clamp((newScore - oldScore) * 0.02f, 0.3f, 1f);
 
-            // build the sequence
+
             _scoreTween = DOTween.Sequence()
-                // 1) scale up over the first half
                 .Append(scoreText.transform.DOScale(1.5f, duration * 0.5f).SetEase(Ease.OutBack))
-                // 2) simultaneously tween the score number
                 .Join(DOTween.To(() => oldScore, x => scoreText.text = x.ToString(), newScore, duration)
                     .SetEase(Ease.Linear))
-                // 3) scale back down over 0.2s
                 .Append(scoreText.transform.DOScale(1f, 0.2f).SetEase(Ease.InBack))
-                // clear reference when done
                 .OnComplete(() => _scoreTween = null);
         }
 
@@ -160,9 +152,8 @@ namespace Tile.UI
         {
             // if (delta <= 0) return;
             // scoreTextPop.text = $"+{delta}";
-            // // TODO: trigger your pop animation here
         }
-        
+
         private void OnExpUpdated(int newExp)
         {
             // animate slider to new value
@@ -177,20 +168,17 @@ namespace Tile.UI
 
         private void OnComboUpdated(int newCombo)
         {
-           
             Debug.Log("Yessss");
             if (newCombo < 2)
-                return; // only show on combo ≥2
+                return;
             _audioService.PlayAudio(AudioKeys.KEY_CoMBO);
-            comboTextPop.text = " COMBO"+ newCombo;
+            comboTextPop.text = " COMBO" + newCombo;
             comboTextPop.gameObject.SetActive(true);
-            
 
-            // 1) pop up to _comboPopScale × idle
+
             comboTextPop.transform
-                .DOScale( _comboPopScale, _popUpDuration)
+                .DOScale(_comboPopScale, _popUpDuration)
                 .SetEase(Ease.OutBack)
-                // 2) then tween back to idle
                 .OnComplete(() =>
                     comboTextPop.transform
                         .DOScale(0, _popDownDuration)

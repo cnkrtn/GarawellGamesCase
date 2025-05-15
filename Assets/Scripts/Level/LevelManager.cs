@@ -35,13 +35,13 @@ public class LevelManager : MonoBehaviour
 
     private IEnumerator Start()
     {
-        // wait until the grid is injected and has valid dimensions
+       
         yield return new WaitUntil(() =>
             ReferenceLocator.Instance.GridService.GridWidth > 0 &&
             ReferenceLocator.Instance.GridService.GridHeight > 0
         );
 
-        // now it’s safe to load
+      
         LoadLevel(0);
     }
 
@@ -55,10 +55,7 @@ public class LevelManager : MonoBehaviour
         NextLevel();
     }
 
-    /// <summary>
-    /// Advance to the next level (wrapping at the end),
-    /// resets score/XP, clears hand, and applies the new LevelData.
-    /// </summary>
+
     public void NextLevel()
     {
         // _currentIndex = (_currentIndex + 1) % levels.Count;
@@ -73,27 +70,27 @@ public class LevelManager : MonoBehaviour
     private void LoadLevel(int idx)
     {
         var data = levels[idx];
-        Debug.Log($"[LevelManager] Loading level {idx + 1}: {data.name}");
+      //  Debug.Log($"[LevelManager] Loading level {idx + 1}: {data.name}");
 
-        // A) Hide every 1×1 square visual
+
         _highlightSvc.ClearAllSquares();
 
-        // B) Wipe out the grid’s fill‐states
+
         int w = _gridSvc.GridWidth;
         int h = _gridSvc.GridHeight;
 
-        // points are (w+1)×(h+1)
+
         for (int y = 0; y <= h; y++)
         for (int x = 0; x <= w; x++)
         {
             var p = _gridSvc.GetPoint(x, y);
             p.IsFilledColor = false;
-            // also reset its actual color so nothing lingers
+
             if (p.Renderer)
                 p.Renderer.color = _highlightSvc.NormalColor;
         }
 
-        // edges
+
         foreach (var e in _gridSvc.AllEdges)
         {
             e.IsFilled = false;
@@ -101,21 +98,21 @@ public class LevelManager : MonoBehaviour
                 e.Renderer.color = _highlightSvc.NormalColor;
         }
 
-        // C) Clear any leftover highlights
+
         _highlightSvc.ClearPoints();
         _highlightSvc.ClearEdges();
 
-        // D) Reset score & combo & exp
+
         _scoreSvc.Reset();
 
-        // E) Clear out the old hand *completely*
+
         if (handObject != null)
             handObject.ClearHand();
 
-        // F) Deal a fresh new hand
+
         handObject.DealNewHand();
 
-        // G) Finally, load and apply your LevelData
+
         loader.SetLevelData(data);
         loader.ApplyLevel();
     }
